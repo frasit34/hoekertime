@@ -15,11 +15,10 @@
   .help-list dt { font-weight: 700; margin-top:.75rem; }
   .small-muted { color: var(--muted); font-size: .875rem; }
   footer .small-muted { font-size: .75rem; }
-  
 </style>
 </head>
 <body class="bg-light">
-    <div class="container-fluid py-4" style="max-width: 90%; margin: auto;">
+<div class="container-fluid py-4" style="max-width: 90%; margin: auto;">
   <h1 class="text-center mb-4">Tidsregistrering</h1>
 
   <!-- Indstillinger + Hjælp knapper -->
@@ -42,18 +41,14 @@
           <div class="small-muted mt-1">“Start her” fortsætter fra en tidligere registrering, hvis postens dato+tid er nyere end grænsen. Ellers startes fra 0 som ny post.</div>
         </div>
         <div class="col-lg-8">
-          <div class="border rounded p-2 bg-light"> 
+          <div class="border rounded p-2 bg-light">
             <div class="fw-semibold mb-2">Hurtig datahåndtering</div>
             <div class="d-flex flex-wrap gap-2">
-              <button id="btnGenSample" class="btn btn-outline-primary">
-                Generér 102 eksempelrækker
-              </button>
-              <button id="btnDeleteAll" class="btn btn-outline-danger">
-                Slet alle rækker
-              </button>
+              <button id="btnGenSample" class="btn btn-outline-primary">Generér 102000 eksempelrækker</button>
+              <button id="btnDeleteAll" class="btn btn-outline-danger">Slet alle rækker</button>
             </div>
             <div class="small-muted mt-2">
-              • <strong>Generér</strong> opretter 102 realistiske demo-poster (datoer, felter og tid).<br>
+              • <strong>Generér</strong> opretter op til 102000 demo-poster (datoer, felter og tid).<br>
               • <strong>Slet alle</strong> tømmer tabellen og lokal lagring. Begge kræver bekræftelse.
             </div>
           </div>
@@ -75,7 +70,7 @@
           <ul class="mb-2">
             <li><strong>Dato + tid</strong>: vælg i dansk format (24t med sekunder).</li>
             <li><strong>Brugernavn</strong>: e-mailadresse (valideres).</li>
-            <li><strong>Projektnummer</strong>, <strong>Aktivitetskode</strong>, <strong>Sag #</strong> (max 10), <strong>Beskrivelse</strong>.</li>
+            <li><strong>Projektnummer</strong> (7 cifre, starter med 19–25), <strong>Aktivitetskode</strong> (4 cifre, runde tal), <strong>Sag #</strong> (max 10), <strong>Beskrivelse</strong>.</li>
             <li><strong>Tid</strong>: HH:MM:SS, DD:HH:MM eller decimaltimer (fx 1,5).</li>
           </ul>
         </dd>
@@ -83,11 +78,11 @@
         <dt>Knapper</dt>
         <dd>
           <ul class="mb-2">
-            <li><strong>Start</strong>: starter/stoppper timeren. Viser HH:MM:SS live.</li>
+            <li><strong>Start</strong>: starter/stopper timeren (HH:MM:SS live).</li>
             <li><strong>Tilføj</strong>: gemmer posten (erstatter hvis du fortsætter en eksisterende inden for grænsen).</li>
             <li><strong>Start her</strong>: kopierer en række op i formularen og starter timeren; fortsætter/erstatter hvis inden for grænsen, ellers fra 0 som ny.</li>
             <li><strong>Dupliker</strong>: kopierer en række op (inkl. tid) uden at starte timeren; “Tilføj” laver ny række.</li>
-            <li><strong>Generér 102 eksempelrækker</strong>: lægger prøve-data i tabellen.</li>
+            <li><strong>Generér 102000 eksempelrækker</strong>: lægger prøve-data i tabellen (begrænses af LocalStorage-kvote).</li>
             <li><strong>Slet alle rækker</strong>: tømmer alt (kræver bekræftelse).</li>
           </ul>
         </dd>
@@ -95,17 +90,17 @@
         <dt>GET-parametre</dt>
         <dd>
           Du kan kalde siden med parametre for at udfylde felter og evt. starte/gemme:
-          <pre class="mb-2"><code>?datetime=2025-08-12T09:30:00
+<pre class="mb-2"><code>?datetime=2025-08-12T09:30:00
 &amp;username=bruger@example.com
-&amp;projektnr=ABC123
-&amp;aktivitet=DEV
+&amp;projektnr=2304571
+&amp;aktivitet=8400
 &amp;sag=SAG000123
 &amp;opgave=Fejlretning
 &amp;tid=01:30:00
 &amp;action=timer|record|draft</code></pre>
           <ul>
             <li><code>datetime</code>: ISO (YYYY-MM-DDTHH:MM(:SS)) – vises som <strong>DD/MM/YYYY HH:MM:SS</strong>.</li>
-            <li><code>username</code>, <code>projektnr</code>, <code>aktivitet</code>, <code>sag</code>, <code>opgave</code>, <code>tid</code>.</li>
+            <li><code>username</code>, <code>projektnr</code> (7 cifre, 19–25xxxx), <code>aktivitet</code> (4 cifre), <code>sag</code>, <code>opgave</code>, <code>tid</code>.</li>
             <li><code>action</code>:
               <ul>
                 <li><code>timer</code> – udfyld felter og <em>start</em> timeren.</li>
@@ -114,12 +109,12 @@
               </ul>
             </li>
           </ul>
-          <div class="small-muted">Eksempel (record):<br>
-          <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=bruger@example.com&amp;projektnr=PRJ1&amp;aktivitet=QA&amp;sag=SAG42&amp;opgave=Test&amp;tid=2.5&amp;action=record</code></div>
-          <div class="small-muted mt-2">Eksempel (timer):<br>
-          <code>...?tid=01:00:00&amp;action=timer</code></div>
+          <div class="small-muted">Eksempel (timer):<br>
+          <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=anna@firma.dk&amp;projektnr=2103478&amp;aktivitet=7200&amp;sag=SAG42&amp;opgave=Årshjul&amp;tid=01:00:00&amp;action=timer</code></div>
+          <div class="small-muted mt-2">Eksempel (record):<br>
+          <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=brian@eksempel.dk&amp;projektnr=2309876&amp;aktivitet=8400&amp;sag=SAG007&amp;opgave=Ændringsanmodning&amp;tid=2.5&amp;action=record</code></div>
           <div class="small-muted mt-2">Eksempel (draft):<br>
-          <code>...?username=bruger@example.com&amp;projektnr=PRJ2&amp;aktivitet=DEV&amp;action=draft</code></div>
+          <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=lotte@contoso.dk&amp;projektnr=1901200&amp;aktivitet=5600&amp;sag=SAG000777&amp;opgave=Køreplan&amp;tid=00:45:00&amp;action=draft</code></div>
         </dd>
 
         <dt>Eksport</dt>
@@ -142,12 +137,12 @@
       </div>
       <div class="col-md-4">
         <label for="projektnr" class="form-label">Projektnummer:</label>
-        <input type="text" id="projektnr" class="form-control" placeholder="Projektnummer" />
+        <input type="text" id="projektnr" class="form-control" placeholder="7-cifret projektnr" />
       </div>
 
       <div class="col-md-4">
         <label for="aktivitet" class="form-label">Aktivitetskode:</label>
-        <input type="text" id="aktivitet" class="form-control" placeholder="Aktivitetskode" />
+        <input type="text" id="aktivitet" class="form-control" placeholder="4-cifret kode (fx 8400)" />
       </div>
       <div class="col-md-4">
         <label for="sag" class="form-label">Sag # (max 10)</label>
@@ -170,16 +165,14 @@
     </div>
   </div>
 
-  <!-- Toolbar: Søg + Eksport (pagination flyttet nedenfor tabellen) -->
-  <div class="mt-4 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+  <!-- Toolbar -->
+  <div class="mt-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
     <h4 class="m-0">Registreringer</h4>
-
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-      <div class="input-group">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div class="input-group" style="max-width: 420px;">
         <span class="input-group-text">Søg</span>
         <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
       </div>
-
       <button onclick="eksporterExcel()" class="btn btn-success btn-sm">Eksporter til Excel</button>
     </div>
   </div>
@@ -203,7 +196,7 @@
     </table>
   </div>
 
-  <!-- Paginering UNDER tabellen -->
+  <!-- Paginering -->
   <nav class="d-flex justify-content-end" aria-label="Pagination">
     <ul class="pagination m-0">
       <li class="page-item"><button class="page-link" id="prevPage" onclick="gotoPrevPage()" type="button">Forrige</button></li>
@@ -220,10 +213,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/da.js"></script>
-<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script> -->
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-
-
 
 <script>
 // ===== Utils =====
@@ -234,7 +224,7 @@ function toLocalIsoNoTZ(d){
   return `${y}-${m}-${da}T${h}:${mi}:${s}`;
 }
 function fromLocalIsoNoTZ(str){
-  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
+  const m=/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})$/.exec(str);
   if(!m) return new Date(NaN);
   const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
   return new Date(Y,Mo-1,D,H,Mi,S,0);
@@ -264,7 +254,7 @@ function parseDDHHMMtoSeconds(v){
 }
 function isValidEmail(v){
   if(!v) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v);
 }
 
 // ===== LocalStorage helpers =====
@@ -281,13 +271,13 @@ function setThresholdToUI(){
   document.getElementById('resumeThreshold').value = saved ?? '10';
 }
 
-// ===== Global UI state (sort + search + pagination) =====
+// ===== Global UI state =====
 let currentSort = { col:'dato', dir:'desc' };
 let currentSearch = '';
 const pageSize = 50;
 let currentPage = 1;
 
-// ===== Flatpickr init helper =====
+// ===== Flatpickr =====
 function initDatePicker(now){
   document.getElementById('dato').value = toLocalIsoNoTZ(now);
   flatpickr("#datoVis", {
@@ -299,7 +289,7 @@ function initDatePicker(now){
   document.getElementById('datoVis')._flatpickr.setDate(now, true);
 }
 
-// ===== Data pipeline: filter + sort =====
+// ===== Data pipeline (filter + sort) =====
 function getDisplayRows(){
   const rows = hentRegistreringer().map((r, idx)=>({
     ...r,
@@ -331,7 +321,7 @@ function getDisplayRows(){
   return filtered;
 }
 
-// ===== Pagination helpers =====
+// ===== Pagination =====
 function totalPages(total){ return Math.max(1, Math.ceil(total / pageSize)); }
 function clampPage(p, maxp){ return Math.min(Math.max(1, p), maxp); }
 function gotoPage(p){
@@ -341,20 +331,18 @@ function gotoPage(p){
 }
 function gotoPrevPage(){ gotoPage(currentPage-1); }
 function gotoNextPage(){ gotoPage(currentPage+1); }
-
 function renderPagination(totalCount){
   const maxp = totalPages(totalCount);
   const pageInfo = document.getElementById('pageInfo');
   const prev = document.getElementById('prevPage');
   const next = document.getElementById('nextPage');
-
   currentPage = clampPage(currentPage, maxp);
   pageInfo.textContent = `Side ${currentPage} af ${maxp}`;
   prev.disabled = currentPage <= 1;
   next.disabled = currentPage >= maxp;
 }
 
-// ===== Tabelrender (med pagination) =====
+// ===== Tabelrender =====
 function visRegistreringer(){
   const tbody = document.getElementById('tabelBody');
   tbody.innerHTML = '';
@@ -550,7 +538,7 @@ function tilføjRegistrering(){
 
   visRegistreringer();
 
-  // nulstil form + timer
+  // reset
   const dNow=new Date();
   document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
   document.getElementById('datoVis')._flatpickr.setDate(dNow, true);
@@ -567,7 +555,7 @@ function tilføjRegistrering(){
 
 // ===== Excel-eksport (.xlsx) =====
 function eksporterExcel(){
-  const all = getDisplayRows(); // filtreret/sorteret (alle sider)
+  const all = getDisplayRows();
   if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
 
   const header = ['DatoTid','Brugernavn','Projektnr','Aktivitetskode','Sag','Beskrivelse','Tid'];
@@ -582,10 +570,7 @@ function eksporterExcel(){
   ]);
   const aoa = [header, ...rows];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  // Kolonnebredder (lidt pænere i Excel)
-  ws['!cols'] = [
-    {wch:20},{wch:28},{wch:14},{wch:16},{wch:10},{wch:40},{wch:12}
-  ];
+  ws['!cols'] = [{wch:20},{wch:28},{wch:14},{wch:16},{wch:10},{wch:40},{wch:12}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Tidsregistrering');
   XLSX.writeFile(wb, 'tidsregistrering.xlsx');
@@ -593,33 +578,64 @@ function eksporterExcel(){
 
 // ===== Sample data + slet alt =====
 function randomChoice(a){ return a[Math.floor(Math.random()*a.length)]; }
-function generateSampleData(){
-  if(!confirm('Oprette 102 eksempelrækker? Eksisterende data bevares.')) return;
-  const users=['bruger@example.com','fr@it34.dk','qa@example.com'];
-  const projekter=['PRJ1','PRJ2','OPS','INTERN'];
-  const akt=['DEV','QA','PM','OPS'];
-  const opgaver=['Feature','Fejlretning','Review','Dokumentation','Møde'];
+function genProjektnr(){
+  const prefixes = ['19','20','21','22','23','24','25'];
+  const p = randomChoice(prefixes);
+  const rest = String(Math.floor(Math.random()*100000)).padStart(5,'0');
+  return p + rest; // 7 cifre
+}
+const aktivitetskoder = [1200,1400,1600,1800,2000,2400,2800,3200,3600,4000,4400,4800,5200,5600,6000,6400,7200,7600,8000,8400].map(String);
+const emails = [
+  'anna@firma.dk','brian@eksempel.dk','camilla@contoso.dk','dennis@firma.dk','eva@eksempel.dk',
+  'frank@firma.dk','grete@contoso.dk','henrik@firma.dk','ivor@eksempel.dk','julie@firma.dk',
+  'kasper@contoso.dk','lars@firma.dk','maria@eksempel.dk','niels@firma.dk','ole@contoso.dk',
+  'pia@firma.dk','rasmus@eksempel.dk','sara@firma.dk','tina@contoso.dk','ulrik@firma.dk'
+];
+const opgaver = [
+  'Fejlretning','Review','Dokumentation','Møde','Feature',
+  'Årshjul','Sagsåbning','Køreplan','Kørebog','Årsafslutning',
+  'Ændringsanmodning','Kvalitetssikring','Brugeroprettelse','Rådgivning',
+  'Opgradering','Vedligehold','Tilpasning','Implementering','Planlægning','Udrulning'
+];
+
+const MAX_LOCALSTORAGE_ROWS = 8000; // ærligt loft – ellers løber du tør for kvote
+async function generateSampleData(){
+  const WANT = 102000;
+  if(!confirm(`Oprette ${WANT} eksempelrækker? (LocalStorage kan ikke rumme så meget – jeg genererer op til ${MAX_LOCALSTORAGE_ROWS})`)) return;
 
   const base = hentRegistreringer();
   const now = new Date();
-  for(let i=0;i<102;i++){
+  const toMake = Math.max(0, Math.min(WANT, MAX_LOCALSTORAGE_ROWS) - base.length);
+  if(toMake <= 0){
+    alert('Der er allerede mindst ' + MAX_LOCALSTORAGE_ROWS + ' rækker. Slet noget først.');
+    return;
+  }
+
+  // generér i batches for ikke at fryse UI
+  const BATCH = 2000;
+  for(let i=0;i<toMake;i++){
     const d = new Date(now.getTime() - Math.floor(Math.random()*30)*86400000 - Math.floor(Math.random()*8)*3600000);
-    const seconds = 900 * (1 + Math.floor(Math.random()*20)); // 15 min steps
+    const seconds = 900 * (1 + Math.floor(Math.random()*20)); // 15-min steps
     base.push({
       dato: toLocalIsoNoTZ(d),
-      username: randomChoice(users),
-      projektnr: randomChoice(projekter),
-      aktivitet: randomChoice(akt),
-      opgave: randomChoice(opgaver) + ' #' + (100+i),
-      sag: String(10000+i),
+      username: randomChoice(emails),
+      projektnr: genProjektnr(),
+      aktivitet: randomChoice(aktivitetskoder),
+      opgave: randomChoice(opgaver) + ' #' + (i+1),
+      sag: String(10000 + i),
       seconds,
       timer: seconds/3600,
       savedAt: Date.now()
     });
+    if (i % BATCH === 0 && i>0){
+      gemRegistreringer(base);
+      await new Promise(r=>setTimeout(r,0));
+    }
   }
   gemRegistreringer(base);
   currentPage = 1;
   visRegistreringer();
+  alert(`Færdig. Oprettede ${toMake} rækker (LocalStorage-loft). Hvis du vil have alle 102000, så skifter vi til IndexedDB.`);
 }
 function deleteAllData(){
   if(!confirm('Slette alle rækker? Dette kan ikke fortrydes.')) return;
@@ -702,7 +718,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('btnDeleteAll').addEventListener('click', deleteAllData);
 });
 
-
+// Ryd formular (ESC)
 function clearForm() {
   const dNow = new Date();
   document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
@@ -713,23 +729,15 @@ function clearForm() {
   document.getElementById('opgave').value = '';
   document.getElementById('sag').value = '';
   document.getElementById('timer').value = '';
-  accumulatedSeconds = 0; 
-  editingIndex = null; 
+  accumulatedSeconds = 0;
+  editingIndex = null;
   resumeReplace = false;
-  if (timerInterval) { 
-    clearInterval(timerInterval); 
-    timerInterval = null; 
-  }
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
   document.getElementById('timerBtn').textContent = 'Start';
 }
-
-// Lyt efter ESC-tast
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    clearForm();
-  }
+  if (e.key === 'Escape') clearForm();
 });
-
 </script>
 </body>
 </html>
