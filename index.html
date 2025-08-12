@@ -9,23 +9,24 @@
 <style>
   th.sortable { cursor: pointer; }
   th.sortable .sort-ind { opacity: .6; font-size: .9em; margin-left: .25rem; }
+  .help-list dt { font-weight: 600; }
 </style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
   <h1 class="text-center mb-4">Tidsregistrering</h1>
 
-  <!-- Indstillinger (skjult bag knap) -->
-  <div class="mb-3 d-flex justify-content-between align-items-center">
-    <div class="input-group w-auto">
-      <span class="input-group-text">Søg</span>
-      <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
-    </div>
-    <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#settingsPanel" aria-expanded="false">
+  <!-- Indstillinger + Hjælp knapper -->
+  <div class="mb-3 d-flex justify-content-end gap-2">
+    <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#settingsPanel" aria-expanded="false" title="Indstillinger">
       Indstillinger
+    </button>
+    <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#helpPanel" aria-expanded="false" title="Hjælp">
+      ?
     </button>
   </div>
 
+  <!-- Indstillinger (skjult) -->
   <div id="settingsPanel" class="collapse">
     <div class="card p-3 shadow-sm mb-3">
       <div class="row g-3 align-items-end">
@@ -35,10 +36,61 @@
         </div>
         <div class="col-sm-6 col-md-8">
           <small class="text-muted d-block">
-            “Start her” fortsætter fra tidligere tid, hvis postens <em>dato+tid</em> er nyere end grænsen; ellers startes fra 0. Ved fortsættelse sættes dato+tid til nu, og “Tilføj” erstatter posten.
+            “Start her” fortsætter fra tidligere tid, hvis postens dato+tid er nyere end grænsen; ellers startes fra 0.
+            Ved fortsættelse sættes dato+tid til nu, og “Tilføj” erstatter posten.
           </small>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Hjælp (skjult) -->
+  <div id="helpPanel" class="collapse">
+    <div class="card p-3 shadow-sm mb-3">
+      <h5 class="mb-3">Hvordan virker siden?</h5>
+      <dl class="help-list">
+        <dt>Felter</dt>
+        <dd>
+          <ul class="mb-2">
+            <li><strong>Dato + tid</strong>: vælg i dansk format (24t med sekunder).</li>
+            <li><strong>Brugernavn</strong>: e-mailadresse (valideres).</li>
+            <li><strong>Projektnummer</strong>, <strong>Aktivitetskode</strong>, <strong>Sag #</strong> (max 10), <strong>Beskrivelse</strong>.</li>
+            <li><strong>Tid</strong>: HH:MM:SS, DD:HH:MM eller decimaltimer (fx 1,5).</li>
+          </ul>
+        </dd>
+        <dt>Knapper</dt>
+        <dd>
+          <ul class="mb-2">
+            <li><strong>Start</strong>: starter/stoppper timeren. Viser HH:MM:SS live.</li>
+            <li><strong>Tilføj</strong>: gemmer posten (erstatter hvis du fortsætter en eksisterende inden for grænsen).</li>
+            <li><strong>Start her</strong>: kopierer en række op i formularen og starter timeren; fortsætter/erstatter hvis inden for grænsen, ellers fra 0 som ny.</li>
+            <li><strong>Dupliker</strong>: kopierer en række op (inkl. tid) uden at starte timeren; “Tilføj” laver ny række.</li>
+          </ul>
+        </dd>
+        <dt>GET-parametre</dt>
+        <dd>
+          Du kan kalde siden med parametre for at udfylde felter og evt. starte/gemme:
+          <pre class="mb-2"><code>?datetime=2025-08-12T09:30:00
+&amp;username=bruger@example.com
+&amp;projektnr=ABC123
+&amp;aktivitet=DEV
+&amp;sag=SAG000123
+&amp;opgave=Fejlretning
+&amp;tid=01:30:00
+&amp;action=timer</code></pre>
+          <ul>
+            <li><code>datetime</code>: ISO tid (YYYY-MM-DDTHH:MM(:SS)) – vises som DD/MM/YYYY HH:MM:SS.</li>
+            <li><code>username</code>: e-mail.</li>
+            <li><code>projektnr</code>, <code>aktivitet</code>, <code>sag</code>, <code>opgave</code>.</li>
+            <li><code>tid</code>: HH:MM:SS, DD:HH:MM eller decimal (1.5/1,5).</li>
+            <li><code>action</code>: <code>timer</code> (start tæller), <code>record</code> (gem straks), <code>draft</code> (kun udfyld).</li>
+          </ul>
+          <p class="mb-0">Eksempel fra vilkårlig base-URL uden filnavn:<br>
+          <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=bruger@example.com&amp;projektnr=PRJ1&amp;aktivitet=QA&amp;sag=SAG42&amp;opgave=Test&amp;tid=2.5&amp;action=record</code></p>
+        </dd>
+        <dt>Eksport</dt>
+        <dd>Eksport sker i semikolon-separeret CSV med <strong>UTF-8 BOM</strong>, så æøå vises korrekt i Excel. Dato/tid som <strong>DD/MM/YYYY HH:MM:SS</strong>, tid som <strong>HH:MM:SS</strong>.</dd>
+      </dl>
     </div>
   </div>
 
@@ -51,22 +103,27 @@
         <input type="hidden" id="dato" />
       </div>
       <div class="col-md-4">
+        <label for="username" class="form-label">Brugernavn (e-mail):</label>
+        <input type="email" id="username" class="form-control" placeholder="bruger@example.com" inputmode="email" autocomplete="username" />
+      </div>
+      <div class="col-md-4">
         <label for="projektnr" class="form-label">Projektnummer:</label>
         <input type="text" id="projektnr" class="form-control" placeholder="Projektnummer" />
       </div>
+
       <div class="col-md-4">
         <label for="aktivitet" class="form-label">Aktivitetskode:</label>
         <input type="text" id="aktivitet" class="form-control" placeholder="Aktivitetskode" />
       </div>
-
-      <div class="col-md-6">
-        <label for="opgave" class="form-label">Beskrivelse:</label>
-        <input type="text" id="opgave" class="form-control" placeholder="Beskriv opgaven" />
-      </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="sag" class="form-label">Sag # (max 10)</label>
         <input type="text" id="sag" class="form-control" maxlength="10" placeholder="Sag #" />
       </div>
+      <div class="col-md-4">
+        <label for="opgave" class="form-label">Beskrivelse:</label>
+        <input type="text" id="opgave" class="form-control" placeholder="Beskriv opgaven" />
+      </div>
+
       <div class="col-md-3">
         <label for="timer" class="form-label">Tid (HH:MM:SS / DD:HH:MM / dec.)</label>
         <input type="text" id="timer" class="form-control" placeholder="00:00:00 eller 1,5" />
@@ -79,10 +136,26 @@
     </div>
   </div>
 
-  <!-- Toplinje: Eksport -->
-  <div class="mt-4 d-flex justify-content-between align-items-center">
-    <h4>Registreringer</h4>
-    <button onclick="eksporterCSV()" class="btn btn-success btn-sm">Eksporter til CSV</button>
+  <!-- Toolbar: Søg + Eksport + Paginering -->
+  <div class="mt-4 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+    <h4 class="m-0">Registreringer</h4>
+
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <div class="input-group">
+        <span class="input-group-text">Søg</span>
+        <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
+      </div>
+
+      <button onclick="eksporterCSV()" class="btn btn-success btn-sm">Eksporter til CSV</button>
+
+      <nav aria-label="Pagination">
+        <ul class="pagination m-0">
+          <li class="page-item"><button class="page-link" id="prevPage" onclick="gotoPrevPage()" type="button">Forrige</button></li>
+          <li class="page-item disabled"><span class="page-link" id="pageInfo">Side 1 af 1</span></li>
+          <li class="page-item"><button class="page-link" id="nextPage" onclick="gotoNextPage()" type="button">Næste</button></li>
+        </ul>
+      </nav>
+    </div>
   </div>
 
   <!-- Tabel -->
@@ -91,6 +164,7 @@
       <thead class="table-dark">
         <tr>
           <th class="sortable" data-col="dato">Dato + tid <span class="sort-ind"></span></th>
+          <th class="sortable" data-col="username">Brugernavn <span class="sort-ind"></span></th>
           <th class="sortable" data-col="projektnr">Projektnr <span class="sort-ind"></span></th>
           <th class="sortable" data-col="aktivitet">Aktivitetskode <span class="sort-ind"></span></th>
           <th class="sortable" data-col="sag">Sag # <span class="sort-ind"></span></th>
@@ -144,6 +218,11 @@ function parseDDHHMMtoSeconds(v){
   if([dd,hh,mm].some(n=>Number.isNaN(n)||n<0)) return null;
   return dd*86400+hh*3600+mm*60;
 }
+function isValidEmail(v){
+  if(!v) return false;
+  // Lad HTML5 type="email" klare meget; simpel fallback:
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
 
 // ===== LocalStorage helpers =====
 function hentRegistreringer(){ return JSON.parse(localStorage.getItem('registreringer')||'[]'); }
@@ -159,11 +238,25 @@ function setThresholdToUI(){
   document.getElementById('resumeThreshold').value = saved ?? '10';
 }
 
-// ===== Global UI state (sort + search) =====
+// ===== Global UI state (sort + search + pagination) =====
 let currentSort = { col:'dato', dir:'desc' };
 let currentSearch = '';
+const pageSize = 50;
+let currentPage = 1;
 
-// ===== Tabelrender med søg/sort =====
+// ===== Flatpickr init helper =====
+function initDatePicker(now){
+  document.getElementById('dato').value = toLocalIsoNoTZ(now);
+  flatpickr("#datoVis", {
+    enableTime:true, time_24hr:true, enableSeconds:true,
+    dateFormat:"d/m/Y H:i:S", locale: flatpickr.l10ns.da,
+    defaultDate: now,
+    onChange: (dates)=>{ if(dates && dates[0]) document.getElementById('dato').value = toLocalIsoNoTZ(dates[0]); }
+  });
+  document.getElementById('datoVis')._flatpickr.setDate(now, true);
+}
+
+// ===== Data pipeline: filter + sort =====
 function getDisplayRows(){
   const rows = hentRegistreringer().map((r, idx)=>({
     ...r,
@@ -171,18 +264,16 @@ function getDisplayRows(){
     _seconds: Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600),
     _datoMs: r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : 0
   }));
-  // filter
   const q = currentSearch.trim().toLowerCase();
   const filtered = q ? rows.filter(r=>{
     const fields = [
       formatDa_ddmmyyyy_hhmmss(r.dato),
-      r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
+      r.username||'', r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
       formatHMS(r._seconds)
     ].join(' ').toLowerCase();
     return fields.includes(q);
   }) : rows;
 
-  // sort
   const { col, dir } = currentSort;
   const sgn = dir==='asc'?1:-1;
   filtered.sort((a,b)=>{
@@ -197,15 +288,44 @@ function getDisplayRows(){
   return filtered;
 }
 
+// ===== Pagination helpers =====
+function totalPages(total){ return Math.max(1, Math.ceil(total / pageSize)); }
+function clampPage(p, maxp){ return Math.min(Math.max(1, p), maxp); }
+function gotoPage(p){
+  const maxp = totalPages(getDisplayRows().length);
+  currentPage = clampPage(p, maxp);
+  visRegistreringer();
+}
+function gotoPrevPage(){ gotoPage(currentPage-1); }
+function gotoNextPage(){ gotoPage(currentPage+1); }
+
+function renderPagination(totalCount){
+  const maxp = totalPages(totalCount);
+  const pageInfo = document.getElementById('pageInfo');
+  const prev = document.getElementById('prevPage');
+  const next = document.getElementById('nextPage');
+
+  currentPage = clampPage(currentPage, maxp);
+  pageInfo.textContent = `Side ${currentPage} af ${maxp}`;
+  prev.disabled = currentPage <= 1;
+  next.disabled = currentPage >= maxp;
+}
+
+// ===== Tabelrender (med pagination) =====
 function visRegistreringer(){
   const tbody = document.getElementById('tabelBody');
   tbody.innerHTML = '';
-  const data = getDisplayRows();
+  const all = getDisplayRows();
+  const total = all.length;
 
-  data.forEach(r=>{
+  const start = (currentPage-1)*pageSize;
+  const page = all.slice(start, start + pageSize);
+
+  page.forEach(r=>{
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${formatDa_ddmmyyyy_hhmmss(r.dato)}</td>
+      <td>${r.username||''}</td>
       <td>${r.projektnr||''}</td>
       <td>${r.aktivitet||''}</td>
       <td>${r.sag||''}</td>
@@ -232,9 +352,12 @@ function visRegistreringer(){
     delBtn.textContent='Slet';
     delBtn.onclick = ()=>{
       if(confirm('Er du sikker på, at du vil slette denne registrering?')){
-        const all = hentRegistreringer();
-        all.splice(r._index,1);
-        gemRegistreringer(all);
+        const allRecs = hentRegistreringer();
+        allRecs.splice(r._index,1);
+        gemRegistreringer(allRecs);
+        const newTotal = getDisplayRows().length;
+        const maxp = totalPages(newTotal);
+        if(currentPage>maxp) currentPage=maxp;
         visRegistreringer();
       }
     };
@@ -243,7 +366,8 @@ function visRegistreringer(){
     tbody.appendChild(tr);
   });
 
-  // opdater sort indikator
+  renderPagination(total);
+
   document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='');
   const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`);
   if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
@@ -254,11 +378,10 @@ let timerInterval=null, startTimeMs=null, accumulatedSeconds=0;
 let editingIndex=null, resumeReplace=false;
 
 function setForm(r){
-  // dato (hidden+vis)
   document.getElementById('dato').value = r.dato;
   const d = fromLocalIsoNoTZ(r.dato);
   document.getElementById('datoVis')._flatpickr.setDate(d, true);
-  // øvrige
+  document.getElementById('username').value = r.username||'';
   document.getElementById('projektnr').value = r.projektnr||'';
   document.getElementById('aktivitet').value = r.aktivitet||'';
   document.getElementById('opgave').value = r.opgave||'';
@@ -291,7 +414,7 @@ function startFromRow(index){
   const copy = { ...r };
   if(withinWindow){
     const now = new Date();
-    copy.dato = toLocalIsoNoTZ(now); // sæt til nu (vises dansk)
+    copy.dato = toLocalIsoNoTZ(now);
   }
   setForm(copy);
 
@@ -331,7 +454,6 @@ function startStopTimer(){
     document.getElementById('timer').value = formatHMS(accumulatedSeconds);
     return;
   }
-  // baseline fra felt
   let baseline=0, v=(document.getElementById('timer').value||'').trim();
   if(v.includes(':')){
     baseline = parseHMStoSeconds(v);
@@ -344,14 +466,20 @@ function startStopTimer(){
 
 // ===== Tilføj registrering =====
 function tilføjRegistrering(){
-  const datoIso = document.getElementById('dato').value; // lokal ISO "YYYY-MM-DDTHH:MM:SS"
+  const datoIso = document.getElementById('dato').value;
+  const username = document.getElementById('username').value.trim();
   const projektnr = document.getElementById('projektnr').value;
   const aktivitet = document.getElementById('aktivitet').value;
   const opgave = document.getElementById('opgave').value;
   const sag = document.getElementById('sag').value;
   let t = (document.getElementById('timer').value||'').trim();
 
-  if(!datoIso || !projektnr || !aktivitet || !opgave || !t){ alert('Udfyld alle felter.'); return; }
+  if(!datoIso || !username || !projektnr || !aktivitet || !opgave || !t){
+    alert('Udfyld alle felter (inkl. brugernavn).'); return;
+  }
+  if(!isValidEmail(username)){
+    alert('Ugyldig e-mailadresse i Brugernavn.'); return;
+  }
 
   let totalSeconds;
   if(timerInterval){
@@ -367,7 +495,7 @@ function tilføjRegistrering(){
   }
 
   const now = Date.now();
-  const rec = { dato:datoIso, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
+  const rec = { dato:datoIso, username, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
 
   const all = hentRegistreringer();
   if(resumeReplace && editingIndex!=null && all[editingIndex]){
@@ -376,12 +504,19 @@ function tilføjRegistrering(){
     all.push(rec);
   }
   gemRegistreringer(all);
+
+  // hold side/pagination
+  const newTotal = getDisplayRows().length + 1;
+  const maxp = Math.max(1, Math.ceil(newTotal/50));
+  if(currentPage>maxp) currentPage=maxp;
+
   visRegistreringer();
 
   // nulstil form + timer
   const dNow=new Date();
   document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
   document.getElementById('datoVis')._flatpickr.setDate(dNow, true);
+  document.getElementById('username').value='';
   document.getElementById('projektnr').value='';
   document.getElementById('aktivitet').value='';
   document.getElementById('opgave').value='';
@@ -392,19 +527,23 @@ function tilføjRegistrering(){
   document.getElementById('timerBtn').textContent='Start';
 }
 
-// ===== CSV-eksport (samme formater som visning) =====
+// ===== CSV-eksport (UTF-8 BOM + visningsformat) =====
 function eksporterCSV(){
-  const all = getDisplayRows(); // respekter evt. søg/sort i eksporten
+  const all = getDisplayRows(); // filtreret/sorteret (alle sider)
   if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
 
-  const header = 'DatoTid;Projektnr;Aktivitetskode;Sag;Beskrivelse;Tid';
+  const header = 'DatoTid;Brugernavn;Projektnr;Aktivitetskode;Sag;Beskrivelse;Tid';
   const rows = all.map(r=>{
     const dt = formatDa_ddmmyyyy_hhmmss(r.dato);
     const tid = formatHMS(r._seconds);
-    return `${dt};${r.projektnr||''};${r.aktivitet||''};${r.sag||''};${(r.opgave||'').replaceAll(';',',')};${tid}`;
+    // erstat ; i beskrivelse for at undgå kolonne-split
+    const bes = (r.opgave||'').replaceAll(';', ',');
+    return `${dt};${r.username||''};${r.projektnr||''};${r.aktivitet||''};${r.sag||''};${bes};${tid}`;
   });
   const csv = [header, ...rows].join('\n');
-  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const csvWithBOM = '\uFEFF' + csv; // BOM så Excel læser UTF-8 korrekt (æøå)
+
+  const blob = new Blob([csvWithBOM], { type:'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='tidsregistrering.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -415,10 +554,8 @@ function eksporterCSV(){
 function applyQueryParams(){
   const q=new URLSearchParams(window.location.search);
   if(![...q.keys()].length) return;
-
   const setIf=(id,val)=>{ if(val!=null && val!=='') document.getElementById(id).value=val; };
 
-  // datetime
   const dt=q.get('datetime');
   if(dt){
     const d=new Date(dt);
@@ -427,7 +564,7 @@ function applyQueryParams(){
       document.getElementById('datoVis')._flatpickr.setDate(d, true);
     }
   }
-
+  setIf('username', q.get('username'));
   setIf('projektnr', q.get('projektnr'));
   setIf('aktivitet', q.get('aktivitet'));
   setIf('sag', q.get('sag'));
@@ -452,34 +589,18 @@ function applyQueryParams(){
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Flatpickr init
   const now=new Date();
-  document.getElementById('dato').value = toLocalIsoNoTZ(now);
-  flatpickr("#datoVis", {
-    enableTime:true, time_24hr:true, enableSeconds:true,
-    dateFormat:"d/m/Y H:i:S", locale: flatpickr.l10ns.da,
-    defaultDate: now,
-    onChange: (dates)=>{ if(dates && dates[0]) document.getElementById('dato').value = toLocalIsoNoTZ(dates[0]); }
-  });
-  document.getElementById('datoVis')._flatpickr.setDate(now, true);
-
+  initDatePicker(now);
   setThresholdToUI();
   visRegistreringer();
   applyQueryParams();
 
-  document.getElementById('resumeThreshold').addEventListener('change', ()=>{
-    const v=document.getElementById('resumeThreshold').value;
-    const n=parseInt(v,10);
-    localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10');
-  });
-
-  // Søg
   document.getElementById('searchInput').addEventListener('input', (e)=>{
     currentSearch = e.target.value || '';
+    currentPage = 1;
     visRegistreringer();
   });
 
-  // Sort (klik på header)
   document.querySelectorAll('th.sortable').forEach(th=>{
     th.addEventListener('click', ()=>{
       const col = th.getAttribute('data-col');
@@ -488,8 +609,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }else{
         currentSort.col=col; currentSort.dir='asc';
       }
+      currentPage = 1;
       visRegistreringer();
     });
+  });
+
+  document.getElementById('resumeThreshold').addEventListener('change', ()=>{
+    const v=document.getElementById('resumeThreshold').value;
+    const n=parseInt(v,10);
+    localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10');
   });
 });
 </script>
