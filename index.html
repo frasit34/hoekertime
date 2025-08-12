@@ -6,17 +6,49 @@
 <title>Tidsregistrering</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  th.sortable { cursor: pointer; }
-  th.sortable .sort-ind { opacity: .6; font-size: .9em; margin-left: .25rem; }
-  .help-list dt { font-weight: 600; }
+  :root{
+    --brand:#3b82f6;          /* primær blå */
+    --brand-contrast:#0b5ed7; /* mørkere hover */
+    --accent:#10b981;         /* grøn */
+    --danger:#ef4444;         /* rød */
+    --ring: rgba(59,130,246,.35);
+  }
+  body{ font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f6f8fb; }
+  .card{ border: 0; border-radius: 18px; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+  .btn{ border-radius: 999px; padding: .6rem 1rem; font-weight:600; letter-spacing:.2px; }
+  .btn-primary{ background: var(--brand); border-color: var(--brand); }
+  .btn-primary:hover{ background: var(--brand-contrast); border-color: var(--brand-contrast); }
+  .btn-success{ background: var(--accent); border-color: var(--accent); }
+  .btn-outline-secondary{ border-width:2px; }
+  .btn-outline-info{ border-width:2px; }
+  .form-control:focus{ box-shadow: 0 0 0 .25rem var(--ring); }
+  th.sortable{ cursor:pointer; user-select:none; }
+  th.sortable .sort-ind{ opacity:.6; font-size:.9em; margin-left:.25rem; }
+  .badge-pill{ border-radius:999px; }
+  .section-title{ font-weight:700; letter-spacing:.3px; }
+  .lead-sm{ font-size: .98rem; color:#475569; }
+  /* Hjælp-indhold typografi */
+  .help-list dt{ font-weight:700; margin-top:.6rem; }
+  .help-list dd{ margin-left:0; }
+  footer{ color:#6b7280; font-size:.85rem; }
+  code{ background:#f1f5f9; border-radius:8px; padding:.25rem .5rem; }
 </style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
-  <h1 class="text-center mb-4">Tidsregistrering</h1>
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h1 class="section-title m-0">Tidsregistrering</h1>
+    <div class="d-none d-md-block text-end">
+      <span class="badge text-bg-light border badge-pill">Let, offline (LocalStorage) app</span>
+    </div>
+  </div>
+  <p class="lead-sm mb-4">Registrér tid hurtigt, genoptag opgaver, duplikér linjer, søg/sortér og eksportér til CSV i korrekt dansk format.</p>
 
-  <!-- Indstillinger + Hjælp knapper -->
+  <!-- Top actions: Indstillinger + Hjælp -->
   <div class="mb-3 d-flex justify-content-end gap-2">
     <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#settingsPanel" aria-expanded="false" title="Indstillinger">
       Indstillinger
@@ -26,110 +58,110 @@
     </button>
   </div>
 
-  <!-- Indstillinger (skjult) -->
+  <!-- Indstillinger (collapse) -->
   <div id="settingsPanel" class="collapse">
     <div class="card p-3 shadow-sm mb-3">
+      <h5 class="mb-3">Indstillinger</h5>
       <div class="row g-3 align-items-end">
         <div class="col-sm-6 col-md-4">
           <label for="resumeThreshold" class="form-label">Fortsæt hvis arkiveret inden (minutter)</label>
           <input type="number" id="resumeThreshold" class="form-control" min="0" step="1" placeholder="10">
+          <div class="form-text">Bruges når du trykker <em>Start her</em> på en eksisterende række.</div>
         </div>
         <div class="col-sm-6 col-md-8">
           <small class="text-muted d-block">
-            “Start her” fortsætter fra tidligere tid, hvis postens dato+tid er nyere end grænsen; ellers startes fra 0.
-            Ved fortsættelse sættes dato+tid til nu, og “Tilføj” erstatter posten.
+            Hvis en række er nyere end grænsen, fortsætter timeren fra den gemte tid, dato+tid sættes til nu, og <strong>Tilføj</strong> erstatter den række. Ellers startes fra 0 og <strong>Tilføj</strong> laver en ny række.
           </small>
+        </div>
+      </div>
+      <hr class="my-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <button id="btnGenSamples" type="button" class="btn btn-outline-primary w-100">
+            Opret 102 eksempelrækker
+          </button>
+          <div class="form-text">Opretter 102 realistiske demoposter (til test af søgning/sortering/paginering). Kræver bekræftelse.</div>
+        </div>
+        <div class="col-md-6">
+          <button id="btnDeleteAll" type="button" class="btn btn-outline-danger w-100">
+            Slet alle rækker
+          </button>
+          <div class="form-text">Tømmer alle registreringer permanent. Kræver bekræftelse.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Hjælp (skjult) -->
+  <!-- Hjælp (collapse) -->
   <div id="helpPanel" class="collapse">
-    <div class="card p-3 shadow-sm mb-3">
-      <h5 class="mb-3">Hvordan virker siden?</h5>
+    <div class="card p-4 shadow-sm mb-3">
+      <h5 class="mb-3">Hjælp &amp; guide</h5>
+      <p>Appen kører i din browser og gemmer i <em>LocalStorage</em> (offline). Du kan:</p>
+      <ul>
+        <li><strong>Start</strong>: Start/stop timeren. Visning i HH:MM:SS.</li>
+        <li><strong>Tilføj</strong>: Gemmer posten. Hvis du fortsætter en eksisterende (inden for grænsen), erstattes den samme række.</li>
+        <li><strong>Start her</strong>: Kopiér en række op og start timeren. Fortsætter eller starter forfra afhængigt af grænsen.</li>
+        <li><strong>Dupliker</strong>: Kopiér en række op (inkl. tid) uden at starte timeren.</li>
+        <li><strong>Søg</strong> og <strong>klik-sortér</strong> tabellen. Paginering viser 50 rækker pr. side.</li>
+        <li><strong>Eksport</strong>: CSV med UTF‑8 BOM (æøå), dato/tid i DD/MM/YYYY HH:MM:SS og tid i HH:MM:SS.</li>
+      </ul>
+      <h6 class="mt-4">GET-parametre (forudfyld og automatisér)</h6>
+      <p>Du kan kalde siden med parametre for at udfylde felter og evt. starte/gemme automatisk.</p>
       <dl class="help-list">
-        <dt>Felter</dt>
-        <dd>
-          <ul class="mb-2">
-            <li><strong>Dato + tid</strong>: vælg i dansk format (24t med sekunder).</li>
-            <li><strong>Brugernavn</strong>: e-mailadresse (valideres).</li>
-            <li><strong>Projektnummer</strong>, <strong>Aktivitetskode</strong>, <strong>Sag #</strong> (max 10), <strong>Beskrivelse</strong>.</li>
-            <li><strong>Tid</strong>: HH:MM:SS, DD:HH:MM eller decimaltimer (fx 1,5).</li>
-          </ul>
-        </dd>
-        <dt>Knapper</dt>
-        <dd>
-          <ul class="mb-2">
-            <li><strong>Start</strong>: starter/stoppper timeren. Viser HH:MM:SS live.</li>
-            <li><strong>Tilføj</strong>: gemmer posten (erstatter hvis du fortsætter en eksisterende inden for grænsen).</li>
-            <li><strong>Start her</strong>: kopierer en række op i formularen og starter timeren; fortsætter/erstatter hvis inden for grænsen, ellers fra 0 som ny.</li>
-            <li><strong>Dupliker</strong>: kopierer en række op (inkl. tid) uden at starte timeren; “Tilføj” laver ny række.</li>
-          </ul>
-        </dd>
-        <dt>GET-parametre</dt>
-        <dd>
-          Du kan kalde siden med parametre for at udfylde felter og evt. starte/gemme:
-          <pre class="mb-2"><code>?datetime=2025-08-12T09:30:00
-&amp;username=bruger@example.com
-&amp;projektnr=ABC123
-&amp;aktivitet=DEV
-&amp;sag=SAG000123
-&amp;opgave=Fejlretning
-&amp;tid=01:30:00
-&amp;action=timer</code></pre>
-          <ul>
-            <li><code>datetime</code>: ISO tid (YYYY-MM-DDTHH:MM(:SS)) – vises som DD/MM/YYYY HH:MM:SS.</li>
-            <li><code>username</code>: e-mail.</li>
-            <li><code>projektnr</code>, <code>aktivitet</code>, <code>sag</code>, <code>opgave</code>.</li>
-            <li><code>tid</code>: HH:MM:SS, DD:HH:MM eller decimal (1.5/1,5).</li>
-            <li><code>action</code>: <code>timer</code> (start tæller), <code>record</code> (gem straks), <code>draft</code> (kun udfyld).</li>
-          </ul>
-          <p class="mb-0">Eksempel fra vilkårlig base-URL uden filnavn:<br>
-          <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=bruger@example.com&amp;projektnr=PRJ1&amp;aktivitet=QA&amp;sag=SAG42&amp;opgave=Test&amp;tid=2.5&amp;action=record</code></p>
-        </dd>
-        <dt>Eksport</dt>
-        <dd>Eksport sker i semikolon-separeret CSV med <strong>UTF-8 BOM</strong>, så æøå vises korrekt i Excel. Dato/tid som <strong>DD/MM/YYYY HH:MM:SS</strong>, tid som <strong>HH:MM:SS</strong>.</dd>
+        <dt><code>datetime</code></dt>
+        <dd>ISO som <code>YYYY-MM-DDTHH:MM(:SS)</code>. Vises som <code>DD/MM/YYYY HH:MM:SS</code>.</dd>
+        <dt><code>username</code></dt>
+        <dd>E-mail (kræves ved gem).</dd>
+        <dt><code>projektnr</code>, <code>aktivitet</code>, <code>sag</code>, <code>opgave</code></dt>
+        <dd>Tekstfelter (<code>sag</code> max 10 tegn).</dd>
+        <dt><code>tid</code></dt>
+        <dd><code>HH:MM:SS</code> eller <code>DD:HH:MM</code> eller decimaltimer (<code>1.5/1,5</code>).</dd>
+        <dt><code>action</code></dt>
+        <dd><code>timer</code> (start tæller), <code>record</code> (gem straks), <code>draft</code> (kun udfyld).</dd>
       </dl>
+      <p class="mb-0"><strong>Eksempel</strong> – vilkårlig base‑URL uden filnavn:<br>
+        <code>https://example.com/tid/?datetime=2025-08-12T09:30:00&amp;username=bruger@example.com&amp;projektnr=PRJ1&amp;aktivitet=QA&amp;sag=SAG42&amp;opgave=Test&amp;tid=2.5&amp;action=record</code>
+      </p>
     </div>
   </div>
 
   <!-- Formular -->
   <div class="card p-3 shadow-sm">
+    <h5 class="mb-3">Ny registrering</h5>
     <div class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label">Dato + tid:</label>
+      <div class="col-lg-4">
+        <label class="form-label">Dato + tid</label>
         <input type="text" id="datoVis" class="form-control" placeholder="dd/mm/yyyy hh:mm:ss" />
         <input type="hidden" id="dato" />
       </div>
-      <div class="col-md-4">
-        <label for="username" class="form-label">Brugernavn (e-mail):</label>
+      <div class="col-lg-4">
+        <label for="username" class="form-label">Brugernavn (e-mail)</label>
         <input type="email" id="username" class="form-control" placeholder="bruger@example.com" inputmode="email" autocomplete="username" />
       </div>
-      <div class="col-md-4">
-        <label for="projektnr" class="form-label">Projektnummer:</label>
+      <div class="col-lg-4">
+        <label for="projektnr" class="form-label">Projektnummer</label>
         <input type="text" id="projektnr" class="form-control" placeholder="Projektnummer" />
       </div>
 
-      <div class="col-md-4">
-        <label for="aktivitet" class="form-label">Aktivitetskode:</label>
+      <div class="col-lg-4">
+        <label for="aktivitet" class="form-label">Aktivitetskode</label>
         <input type="text" id="aktivitet" class="form-control" placeholder="Aktivitetskode" />
       </div>
-      <div class="col-md-4">
+      <div class="col-lg-4">
         <label for="sag" class="form-label">Sag # (max 10)</label>
         <input type="text" id="sag" class="form-control" maxlength="10" placeholder="Sag #" />
       </div>
-      <div class="col-md-4">
-        <label for="opgave" class="form-label">Beskrivelse:</label>
+      <div class="col-lg-4">
+        <label for="opgave" class="form-label">Beskrivelse</label>
         <input type="text" id="opgave" class="form-control" placeholder="Beskriv opgaven" />
       </div>
 
-      <div class="col-md-3">
+      <div class="col-lg-4">
         <label for="timer" class="form-label">Tid (HH:MM:SS / DD:HH:MM / dec.)</label>
         <input type="text" id="timer" class="form-control" placeholder="00:00:00 eller 1,5" />
       </div>
 
-      <div class="col-md-3 d-flex align-items-end gap-2">
+      <div class="col-lg-4 d-flex align-items-end gap-2">
         <button onclick="tilføjRegistrering()" class="btn btn-primary w-100">Tilføj</button>
         <button id="timerBtn" onclick="startStopTimer()" class="btn btn-success w-100">Start</button>
       </div>
@@ -139,15 +171,12 @@
   <!-- Toolbar: Søg + Eksport + Paginering -->
   <div class="mt-4 d-flex flex-wrap gap-2 align-items-center justify-content-between">
     <h4 class="m-0">Registreringer</h4>
-
     <div class="d-flex flex-wrap gap-2 align-items-center">
       <div class="input-group">
         <span class="input-group-text">Søg</span>
         <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
       </div>
-
-      <button onclick="eksporterCSV()" class="btn btn-success btn-sm">Eksporter til CSV</button>
-
+      <button onclick="eksporterCSV()" class="btn btn-outline-primary btn-sm">Eksporter til CSV</button>
       <nav aria-label="Pagination">
         <ul class="pagination m-0">
           <li class="page-item"><button class="page-link" id="prevPage" onclick="gotoPrevPage()" type="button">Forrige</button></li>
@@ -176,6 +205,10 @@
       <tbody id="tabelBody"></tbody>
     </table>
   </div>
+
+  <footer class="mt-4 text-center">
+    <div>Font: Montserrat © The Montserrat Project Authors. Licens: SIL Open Font License 1.1 (OFL).</div>
+  </footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -184,59 +217,19 @@
 <script>
 // ===== Utils =====
 function pad2(n){ return String(n).padStart(2,'0'); }
-function toLocalIsoNoTZ(d){
-  const y=d.getFullYear(), m=pad2(d.getMonth()+1), da=pad2(d.getDate());
-  const h=pad2(d.getHours()), mi=pad2(d.getMinutes()), s=pad2(d.getSeconds());
-  return `${y}-${m}-${da}T${h}:${mi}:${s}`;
-}
-function fromLocalIsoNoTZ(str){
-  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
-  if(!m) return new Date(NaN);
-  const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
-  return new Date(Y,Mo-1,D,H,Mi,S,0);
-}
-function formatDa_ddmmyyyy_hhmmss(localIsoStr){
-  const d = fromLocalIsoNoTZ(localIsoStr);
-  if (isNaN(d)) return localIsoStr || '';
-  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
-}
-function formatHMS(totalSeconds){
-  const hh=pad2(Math.floor(totalSeconds/3600));
-  const mm=pad2(Math.floor((totalSeconds%3600)/60));
-  const ss=pad2(totalSeconds%60);
-  return `${hh}:${mm}:${ss}`;
-}
-function parseHMStoSeconds(v){
-  const p=v.split(':'); if(p.length<2||p.length>3) return null;
-  const hh=parseInt(p[0]||'0',10), mm=parseInt(p[1]||'0',10), ss=parseInt((p[2]||'0'),10);
-  if([hh,mm,ss].some(n=>Number.isNaN(n)||n<0)) return null;
-  return hh*3600+mm*60+ss;
-}
-function parseDDHHMMtoSeconds(v){
-  const p=v.split(':'); if(p.length!==3) return null;
-  const dd=parseInt(p[0]||'0',10), hh=parseInt(p[1]||'0',10), mm=parseInt(p[2]||'0',10);
-  if([dd,hh,mm].some(n=>Number.isNaN(n)||n<0)) return null;
-  return dd*86400+hh*3600+mm*60;
-}
-function isValidEmail(v){
-  if(!v) return false;
-  // Lad HTML5 type="email" klare meget; simpel fallback:
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-}
+function toLocalIsoNoTZ(d){ const y=d.getFullYear(), m=pad2(d.getMonth()+1), da=pad2(d.getDate()); const h=pad2(d.getHours()), mi=pad2(d.getMinutes()), s=pad2(d.getSeconds()); return `${y}-${m}-${da}T${h}:${mi}:${s}`; }
+function fromLocalIsoNoTZ(str){ const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str); if(!m) return new Date(NaN); const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6]; return new Date(Y,Mo-1,D,H,Mi,S,0); }
+function formatDa_ddmmyyyy_hhmmss(localIsoStr){ const d = fromLocalIsoNoTZ(localIsoStr); if (isNaN(d)) return localIsoStr || ''; return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; }
+function formatHMS(totalSeconds){ const hh=pad2(Math.floor(totalSeconds/3600)); const mm=pad2(Math.floor((totalSeconds%3600)/60)); const ss=pad2(totalSeconds%60); return `${hh}:${mm}:${ss}`; }
+function parseHMStoSeconds(v){ const p=v.split(':'); if(p.length<2||p.length>3) return null; const hh=parseInt(p[0]||'0',10), mm=parseInt(p[1]||'0',10), ss=parseInt((p[2]||'0'),10); if([hh,mm,ss].some(n=>Number.isNaN(n)||n<0)) return null; return hh*3600+mm*60+ss; }
+function parseDDHHMMtoSeconds(v){ const p=v.split(':'); if(p.length!==3) return null; const dd=parseInt(p[0]||'0',10), hh=parseInt(p[1]||'0',10), mm=parseInt(p[2]||'0',10); if([dd,hh,mm].some(n=>Number.isNaN(n)||n<0)) return null; return dd*86400+hh*3600+mm*60; }
+function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v||''); }
 
 // ===== LocalStorage helpers =====
 function hentRegistreringer(){ return JSON.parse(localStorage.getItem('registreringer')||'[]'); }
 function gemRegistreringer(rs){ localStorage.setItem('registreringer', JSON.stringify(rs)); }
-function getThresholdMinutes(){
-  const ui=parseInt(document.getElementById('resumeThreshold').value||'',10);
-  if(!Number.isNaN(ui)&&ui>=0) return ui;
-  const ls=parseInt(localStorage.getItem('resumeThresholdMin')||'',10);
-  return Number.isNaN(ls)?10:ls;
-}
-function setThresholdToUI(){
-  const saved=localStorage.getItem('resumeThresholdMin');
-  document.getElementById('resumeThreshold').value = saved ?? '10';
-}
+function getThresholdMinutes(){ const ui=parseInt(document.getElementById('resumeThreshold').value||'',10); if(!Number.isNaN(ui)&&ui>=0) return ui; const ls=parseInt(localStorage.getItem('resumeThresholdMin')||'',10); return Number.isNaN(ls)?10:ls; }
+function setThresholdToUI(){ const saved=localStorage.getItem('resumeThresholdMin'); document.getElementById('resumeThreshold').value = saved ?? '10'; }
 
 // ===== Global UI state (sort + search + pagination) =====
 let currentSort = { col:'dato', dir:'desc' };
@@ -247,80 +240,33 @@ let currentPage = 1;
 // ===== Flatpickr init helper =====
 function initDatePicker(now){
   document.getElementById('dato').value = toLocalIsoNoTZ(now);
-  flatpickr("#datoVis", {
-    enableTime:true, time_24hr:true, enableSeconds:true,
-    dateFormat:"d/m/Y H:i:S", locale: flatpickr.l10ns.da,
-    defaultDate: now,
-    onChange: (dates)=>{ if(dates && dates[0]) document.getElementById('dato').value = toLocalIsoNoTZ(dates[0]); }
-  });
+  flatpickr("#datoVis", { enableTime:true, time_24hr:true, enableSeconds:true, dateFormat:"d/m/Y H:i:S", locale: flatpickr.l10ns.da, defaultDate: now, onChange: (dates)=>{ if(dates && dates[0]) document.getElementById('dato').value = toLocalIsoNoTZ(dates[0]); } });
   document.getElementById('datoVis')._flatpickr.setDate(now, true);
 }
 
 // ===== Data pipeline: filter + sort =====
 function getDisplayRows(){
-  const rows = hentRegistreringer().map((r, idx)=>({
-    ...r,
-    _index: idx,
-    _seconds: Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600),
-    _datoMs: r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : 0
-  }));
+  const rows = hentRegistreringer().map((r, idx)=>({ ...r, _index: idx, _seconds: Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600), _datoMs: r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : 0 }));
   const q = currentSearch.trim().toLowerCase();
-  const filtered = q ? rows.filter(r=>{
-    const fields = [
-      formatDa_ddmmyyyy_hhmmss(r.dato),
-      r.username||'', r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
-      formatHMS(r._seconds)
-    ].join(' ').toLowerCase();
-    return fields.includes(q);
-  }) : rows;
-
-  const { col, dir } = currentSort;
-  const sgn = dir==='asc'?1:-1;
-  filtered.sort((a,b)=>{
-    let va, vb;
-    if(col==='seconds'){ va=a._seconds; vb=b._seconds; }
-    else if(col==='dato'){ va=a._datoMs; vb=b._datoMs; }
-    else { va=(a[col]||'').toString().toLowerCase(); vb=(b[col]||'').toString().toLowerCase(); }
-    if(va<vb) return -1*sgn;
-    if(va>vb) return 1*sgn;
-    return 0;
-  });
+  const filtered = q ? rows.filter(r=>{ const fields = [ formatDa_ddmmyyyy_hhmmss(r.dato), r.username||'', r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'', formatHMS(r._seconds) ].join(' ').toLowerCase(); return fields.includes(q); }) : rows;
+  const { col, dir } = currentSort; const sgn = dir==='asc'?1:-1;
+  filtered.sort((a,b)=>{ let va, vb; if(col==='seconds'){ va=a._seconds; vb=b._seconds; } else if(col==='dato'){ va=a._datoMs; vb=b._datoMs; } else { va=(a[col]||'').toString().toLowerCase(); vb=(b[col]||'').toString().toLowerCase(); } if(va<vb) return -1*sgn; if(va>vb) return 1*sgn; return 0; });
   return filtered;
 }
 
 // ===== Pagination helpers =====
 function totalPages(total){ return Math.max(1, Math.ceil(total / pageSize)); }
 function clampPage(p, maxp){ return Math.min(Math.max(1, p), maxp); }
-function gotoPage(p){
-  const maxp = totalPages(getDisplayRows().length);
-  currentPage = clampPage(p, maxp);
-  visRegistreringer();
-}
+function gotoPage(p){ const maxp = totalPages(getDisplayRows().length); currentPage = clampPage(p, maxp); visRegistreringer(); }
 function gotoPrevPage(){ gotoPage(currentPage-1); }
 function gotoNextPage(){ gotoPage(currentPage+1); }
-
-function renderPagination(totalCount){
-  const maxp = totalPages(totalCount);
-  const pageInfo = document.getElementById('pageInfo');
-  const prev = document.getElementById('prevPage');
-  const next = document.getElementById('nextPage');
-
-  currentPage = clampPage(currentPage, maxp);
-  pageInfo.textContent = `Side ${currentPage} af ${maxp}`;
-  prev.disabled = currentPage <= 1;
-  next.disabled = currentPage >= maxp;
-}
+function renderPagination(totalCount){ const maxp = totalPages(totalCount); const pageInfo = document.getElementById('pageInfo'); const prev = document.getElementById('prevPage'); const next = document.getElementById('nextPage'); currentPage = clampPage(currentPage, maxp); pageInfo.textContent = `Side ${currentPage} af ${maxp}`; prev.disabled = currentPage <= 1; next.disabled = currentPage >= maxp; }
 
 // ===== Tabelrender (med pagination) =====
 function visRegistreringer(){
-  const tbody = document.getElementById('tabelBody');
-  tbody.innerHTML = '';
-  const all = getDisplayRows();
-  const total = all.length;
-
-  const start = (currentPage-1)*pageSize;
-  const page = all.slice(start, start + pageSize);
-
+  const tbody = document.getElementById('tabelBody'); tbody.innerHTML = '';
+  const all = getDisplayRows(); const total = all.length;
+  const start = (currentPage-1)*pageSize; const page = all.slice(start, start + pageSize);
   page.forEach(r=>{
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -334,291 +280,88 @@ function visRegistreringer(){
       <td></td>
     `;
     const actions = tr.lastElementChild;
-
-    const startBtn = document.createElement('button');
-    startBtn.className='btn btn-sm btn-outline-success me-1';
-    startBtn.textContent='Start her';
-    startBtn.onclick = ()=> startFromRow(r._index);
-    actions.appendChild(startBtn);
-
-    const dupBtn = document.createElement('button');
-    dupBtn.className='btn btn-sm btn-outline-primary me-1';
-    dupBtn.textContent='Dupliker';
-    dupBtn.onclick = ()=> duplicateToForm(r._index);
-    actions.appendChild(dupBtn);
-
-    const delBtn = document.createElement('button');
-    delBtn.className='btn btn-sm btn-danger';
-    delBtn.textContent='Slet';
-    delBtn.onclick = ()=>{
-      if(confirm('Er du sikker på, at du vil slette denne registrering?')){
-        const allRecs = hentRegistreringer();
-        allRecs.splice(r._index,1);
-        gemRegistreringer(allRecs);
-        const newTotal = getDisplayRows().length;
-        const maxp = totalPages(newTotal);
-        if(currentPage>maxp) currentPage=maxp;
-        visRegistreringer();
-      }
-    };
-    actions.appendChild(delBtn);
-
+    const startBtn = document.createElement('button'); startBtn.className='btn btn-sm btn-outline-success me-1'; startBtn.textContent='Start her'; startBtn.onclick = ()=> startFromRow(r._index); actions.appendChild(startBtn);
+    const dupBtn = document.createElement('button'); dupBtn.className='btn btn-sm btn-outline-primary me-1'; dupBtn.textContent='Dupliker'; dupBtn.onclick = ()=> duplicateToForm(r._index); actions.appendChild(dupBtn);
+    const delBtn = document.createElement('button'); delBtn.className='btn btn-sm btn-outline-danger'; delBtn.textContent='Slet'; delBtn.onclick = ()=>{ if(confirm('Er du sikker på, at du vil slette denne registrering?')){ const allRecs = hentRegistreringer(); allRecs.splice(r._index,1); gemRegistreringer(allRecs); const newTotal = getDisplayRows().length; const maxp = totalPages(newTotal); if(currentPage>maxp) currentPage=maxp; visRegistreringer(); } }; actions.appendChild(delBtn);
     tbody.appendChild(tr);
   });
-
   renderPagination(total);
-
   document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='');
-  const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`);
-  if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
+  const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`); if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
 }
 
 // ===== Timer-state =====
-let timerInterval=null, startTimeMs=null, accumulatedSeconds=0;
-let editingIndex=null, resumeReplace=false;
-
-function setForm(r){
-  document.getElementById('dato').value = r.dato;
-  const d = fromLocalIsoNoTZ(r.dato);
-  document.getElementById('datoVis')._flatpickr.setDate(d, true);
-  document.getElementById('username').value = r.username||'';
-  document.getElementById('projektnr').value = r.projektnr||'';
-  document.getElementById('aktivitet').value = r.aktivitet||'';
-  document.getElementById('opgave').value = r.opgave||'';
-  document.getElementById('sag').value = r.sag||'';
-}
-function stopTimerUI(){
-  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
-  document.getElementById('timerBtn').textContent='Start';
-}
-function startTimerUIFromSeconds(seconds){
-  accumulatedSeconds=seconds;
-  startTimeMs = Date.now() - seconds*1000;
-  document.getElementById('timerBtn').textContent='Stop';
-  document.getElementById('timer').value = formatHMS(accumulatedSeconds);
-  timerInterval = setInterval(()=>{
-    const totalSeconds = Math.floor((Date.now()-startTimeMs)/1000);
-    document.getElementById('timer').value = formatHMS(totalSeconds);
-  }, 250);
-}
-
-function startFromRow(index){
-  const all = hentRegistreringer();
-  const r = all[index];
-  if(!r) return;
-
-  const thresholdMin = getThresholdMinutes();
-  const recordTimeMs = r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : Date.now();
-  const withinWindow = (Date.now() - recordTimeMs) <= thresholdMin*60*1000;
-
-  const copy = { ...r };
-  if(withinWindow){
-    const now = new Date();
-    copy.dato = toLocalIsoNoTZ(now);
-  }
-  setForm(copy);
-
-  const baseline = withinWindow
-    ? (Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600))
-    : 0;
-
-  editingIndex = withinWindow ? index : null;
-  resumeReplace = withinWindow;
-
-  stopTimerUI();
-  startTimerUIFromSeconds(baseline);
-}
-
-function duplicateToForm(index){
-  const all = hentRegistreringer();
-  const r = all[index];
-  if(!r) return;
-
-  setForm(r);
-  const seconds = Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600);
-  document.getElementById('timer').value = formatHMS(seconds);
-
-  stopTimerUI();
-  accumulatedSeconds=0;
-  editingIndex=null;
-  resumeReplace=false;
-}
-
-function startStopTimer(){
-  const btn=document.getElementById('timerBtn');
-  if(timerInterval){
-    const runningSeconds=Math.floor((Date.now()-startTimeMs)/1000);
-    accumulatedSeconds=runningSeconds;
-    clearInterval(timerInterval); timerInterval=null;
-    btn.textContent='Start';
-    document.getElementById('timer').value = formatHMS(accumulatedSeconds);
-    return;
-  }
-  let baseline=0, v=(document.getElementById('timer').value||'').trim();
-  if(v.includes(':')){
-    baseline = parseHMStoSeconds(v);
-    if(baseline==null) baseline = parseDDHHMMtoSeconds(v) ?? 0;
-  } else if(v){
-    const num=parseFloat(v.replace(',', '.')); if(!Number.isNaN(num)&&num>=0) baseline=Math.round(num*3600);
-  }
-  startTimerUIFromSeconds(baseline);
-}
+let timerInterval=null, startTimeMs=null, accumulatedSeconds=0; let editingIndex=null, resumeReplace=false;
+function setForm(r){ document.getElementById('dato').value = r.dato; const d = fromLocalIsoNoTZ(r.dato); document.getElementById('datoVis')._flatpickr.setDate(d, true); document.getElementById('username').value = r.username||''; document.getElementById('projektnr').value = r.projektnr||''; document.getElementById('aktivitet').value = r.aktivitet||''; document.getElementById('opgave').value = r.opgave||''; document.getElementById('sag').value = r.sag||''; }
+function stopTimerUI(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } document.getElementById('timerBtn').textContent='Start'; }
+function startTimerUIFromSeconds(seconds){ accumulatedSeconds=seconds; startTimeMs = Date.now() - seconds*1000; document.getElementById('timerBtn').textContent='Stop'; document.getElementById('timer').value = formatHMS(accumulatedSeconds); timerInterval = setInterval(()=>{ const totalSeconds = Math.floor((Date.now()-startTimeMs)/1000); document.getElementById('timer').value = formatHMS(totalSeconds); }, 250); }
+function startFromRow(index){ const all = hentRegistreringer(); const r = all[index]; if(!r) return; const thresholdMin = getThresholdMinutes(); const recordTimeMs = r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : Date.now(); const withinWindow = (Date.now() - recordTimeMs) <= thresholdMin*60*1000; const copy = { ...r }; if(withinWindow){ const now = new Date(); copy.dato = toLocalIsoNoTZ(now); } setForm(copy); const baseline = withinWindow ? (Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600)) : 0; editingIndex = withinWindow ? index : null; resumeReplace = withinWindow; stopTimerUI(); startTimerUIFromSeconds(baseline); }
+function duplicateToForm(index){ const all = hentRegistreringer(); const r = all[index]; if(!r) return; setForm(r); const seconds = Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600); document.getElementById('timer').value = formatHMS(seconds); stopTimerUI(); accumulatedSeconds=0; editingIndex=null; resumeReplace=false; }
+function startStopTimer(){ const btn=document.getElementById('timerBtn'); if(timerInterval){ const runningSeconds=Math.floor((Date.now()-startTimeMs)/1000); accumulatedSeconds=runningSeconds; clearInterval(timerInterval); timerInterval=null; btn.textContent='Start'; document.getElementById('timer').value = formatHMS(accumulatedSeconds); return; } let baseline=0, v=(document.getElementById('timer').value||'').trim(); if(v.includes(':')){ baseline = parseHMStoSeconds(v); if(baseline==null) baseline = parseDDHHMMtoSeconds(v) ?? 0; } else if(v){ const num=parseFloat(v.replace(',', '.')); if(!Number.isNaN(num)&&num>=0) baseline=Math.round(num*3600); } startTimerUIFromSeconds(baseline); }
 
 // ===== Tilføj registrering =====
-function tilføjRegistrering(){
-  const datoIso = document.getElementById('dato').value;
-  const username = document.getElementById('username').value.trim();
-  const projektnr = document.getElementById('projektnr').value;
-  const aktivitet = document.getElementById('aktivitet').value;
-  const opgave = document.getElementById('opgave').value;
-  const sag = document.getElementById('sag').value;
-  let t = (document.getElementById('timer').value||'').trim();
-
-  if(!datoIso || !username || !projektnr || !aktivitet || !opgave || !t){
-    alert('Udfyld alle felter (inkl. brugernavn).'); return;
-  }
-  if(!isValidEmail(username)){
-    alert('Ugyldig e-mailadresse i Brugernavn.'); return;
-  }
-
-  let totalSeconds;
-  if(timerInterval){
-    totalSeconds = Math.floor((Date.now()-startTimeMs)/1000);
-  } else if(t.includes(':')){
-    let s=parseHMStoSeconds(t); if(s==null) s=parseDDHHMMtoSeconds(t);
-    if(s==null){ alert('Ugyldigt tidsformat. Brug HH:MM:SS, DD:HH:MM eller decimaltal.'); return; }
-    totalSeconds=s;
-  } else {
-    const num=parseFloat(t.replace(',', '.'));
-    if(Number.isNaN(num)){ alert('Tid skal være et tal eller HH:MM:SS / DD:HH:MM'); return; }
-    totalSeconds = Math.round(num*3600);
-  }
-
-  const now = Date.now();
-  const rec = { dato:datoIso, username, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
-
-  const all = hentRegistreringer();
-  if(resumeReplace && editingIndex!=null && all[editingIndex]){
-    all[editingIndex] = rec;
-  } else {
-    all.push(rec);
-  }
+function tilføjRegistrering(){ const datoIso = document.getElementById('dato').value; const username = document.getElementById('username').value.trim(); const projektnr = document.getElementById('projektnr').value; const aktivitet = document.getElementById('aktivitet').value; const opgave = document.getElementById('opgave').value; const sag = document.getElementById('sag').value; let t = (document.getElementById('timer').value||'').trim(); if(!datoIso || !username || !projektnr || !aktivitet || !opgave || !t){ alert('Udfyld alle felter (inkl. brugernavn).'); return; } if(!isValidEmail(username)){ alert('Ugyldig e-mailadresse i Brugernavn.'); return; } let totalSeconds; if(timerInterval){ totalSeconds = Math.floor((Date.now()-startTimeMs)/1000); } else if(t.includes(':')){ let s=parseHMStoSeconds(t); if(s==null) s=parseDDHHMMtoSeconds(t); if(s==null){ alert('Ugyldigt tidsformat. Brug HH:MM:SS, DD:HH:MM eller decimaltal.'); return; } totalSeconds=s; } else { const num=parseFloat(t.replace(',', '.')); if(Number.isNaN(num)){ alert('Tid skal være et tal eller HH:MM:SS / DD:HH:MM'); return; } totalSeconds = Math.round(num*3600); }
+  const now = Date.now(); const rec = { dato:datoIso, username, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
+  const all = hentRegistreringer(); if(resumeReplace && editingIndex!=null && all[editingIndex]){ all[editingIndex] = rec; } else { all.push(rec); }
   gemRegistreringer(all);
-
-  // hold side/pagination
-  const newTotal = getDisplayRows().length + 1;
-  const maxp = Math.max(1, Math.ceil(newTotal/50));
-  if(currentPage>maxp) currentPage=maxp;
-
+  const dNow=new Date(); document.getElementById('dato').value = toLocalIsoNoTZ(dNow); document.getElementById('datoVis')._flatpickr.setDate(dNow, true); document.getElementById('username').value=''; document.getElementById('projektnr').value=''; document.getElementById('aktivitet').value=''; document.getElementById('opgave').value=''; document.getElementById('sag').value=''; document.getElementById('timer').value=''; accumulatedSeconds=0; editingIndex=null; resumeReplace=false; if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } document.getElementById('timerBtn').textContent='Start';
+  // refresh visning (hold side nogenlunde)
   visRegistreringer();
-
-  // nulstil form + timer
-  const dNow=new Date();
-  document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
-  document.getElementById('datoVis')._flatpickr.setDate(dNow, true);
-  document.getElementById('username').value='';
-  document.getElementById('projektnr').value='';
-  document.getElementById('aktivitet').value='';
-  document.getElementById('opgave').value='';
-  document.getElementById('sag').value='';
-  document.getElementById('timer').value='';
-  accumulatedSeconds=0; editingIndex=null; resumeReplace=false;
-  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
-  document.getElementById('timerBtn').textContent='Start';
 }
 
 // ===== CSV-eksport (UTF-8 BOM + visningsformat) =====
-function eksporterCSV(){
-  const all = getDisplayRows(); // filtreret/sorteret (alle sider)
-  if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
+function eksporterCSV(){ const all = getDisplayRows(); if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; } const header = 'DatoTid;Brugernavn;Projektnr;Aktivitetskode;Sag;Beskrivelse;Tid'; const rows = all.map(r=>{ const dt = formatDa_ddmmyyyy_hhmmss(r.dato); const tid = formatHMS(r._seconds); const bes = (r.opgave||'').replaceAll(';', ','); return `${dt};${r.username||''};${r.projektnr||''};${r.aktivitet||''};${r.sag||''};${bes};${tid}`; }); const csv = [header, ...rows].join('\n'); const csvWithBOM = '\uFEFF' + csv; const blob = new Blob([csvWithBOM], { type:'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tidsregistrering.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
 
-  const header = 'DatoTid;Brugernavn;Projektnr;Aktivitetskode;Sag;Beskrivelse;Tid';
-  const rows = all.map(r=>{
-    const dt = formatDa_ddmmyyyy_hhmmss(r.dato);
-    const tid = formatHMS(r._seconds);
-    // erstat ; i beskrivelse for at undgå kolonne-split
-    const bes = (r.opgave||'').replaceAll(';', ',');
-    return `${dt};${r.username||''};${r.projektnr||''};${r.aktivitet||''};${r.sag||''};${bes};${tid}`;
-  });
-  const csv = [header, ...rows].join('\n');
-  const csvWithBOM = '\uFEFF' + csv; // BOM så Excel læser UTF-8 korrekt (æøå)
-
-  const blob = new Blob([csvWithBOM], { type:'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='tidsregistrering.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+// ===== Sample generator (102) & delete all =====
+function randomChoice(a){ return a[Math.floor(Math.random()*a.length)]; }
+function genSamples102(){
+  if(!confirm('Oprette 102 eksempelrækker? Eksisterende rækker forbliver.')) return;
+  const users=[ 'anna@example.com','bo@example.com','cam@firma.dk','dev@corp.io','eva@virk.dk' ];
+  const projekter=[ 'PRJ-100','PRJ-200','PRJ-300','WEB','APP','OPS' ];
+  const aktiviteter=[ 'DEV','QA','PM','MEET','DOC' ];
+  const sager=[ 'SAG0001','SAG0002','SAG0003','SAG0042','SAG0123','SAG9999' ];
+  const opgaver=[ 'Featurearbejde','Fejlretning','Kodedesign','Test','Planlægning','Møde','Dokumentation' ];
+  const now = new Date();
+  const list = hentRegistreringer();
+  for(let i=0;i<102;i++){
+    const d = new Date(now.getTime() - Math.floor(Math.random()*14*24*3600*1000)); // sidste 14 dage
+    d.setHours(8+Math.floor(Math.random()*9), Math.floor(Math.random()*60), Math.floor(Math.random()*60), 0);
+    const seconds = (30+Math.floor(Math.random()*270))*60; // 0.5h til 5h
+    list.push({
+      dato: toLocalIsoNoTZ(d),
+      username: randomChoice(users),
+      projektnr: randomChoice(projekter),
+      aktivitet: randomChoice(aktiviteter),
+      sag: randomChoice(sager),
+      opgave: randomChoice(opgaver),
+      seconds: seconds,
+      timer: seconds/3600,
+      savedAt: Date.now()
+    });
+  }
+  gemRegistreringer(list);
+  currentPage = 1; // gå til første side for overblik
+  visRegistreringer();
 }
+function deleteAll(){ if(!confirm('Slette alle rækker permanent?')) return; localStorage.removeItem('registreringer'); currentPage=1; visRegistreringer(); }
 
 // ===== GET-parametre =====
-function applyQueryParams(){
-  const q=new URLSearchParams(window.location.search);
-  if(![...q.keys()].length) return;
-  const setIf=(id,val)=>{ if(val!=null && val!=='') document.getElementById(id).value=val; };
-
-  const dt=q.get('datetime');
-  if(dt){
-    const d=new Date(dt);
-    if(!isNaN(d)){
-      document.getElementById('dato').value = toLocalIsoNoTZ(d);
-      document.getElementById('datoVis')._flatpickr.setDate(d, true);
-    }
-  }
-  setIf('username', q.get('username'));
-  setIf('projektnr', q.get('projektnr'));
-  setIf('aktivitet', q.get('aktivitet'));
-  setIf('sag', q.get('sag'));
-  setIf('opgave', q.get('opgave'));
-
-  const tid=q.get('tid');
-  if(tid){
-    let seconds=null;
-    if(tid.includes(':')){ seconds=parseHMStoSeconds(tid); if(seconds==null) seconds=parseDDHHMMtoSeconds(tid); }
-    else { const num=parseFloat(tid.replace(',','.')); if(!Number.isNaN(num)) seconds=Math.round(num*3600); }
-    if(seconds!=null){
-      document.getElementById('timer').value = formatHMS(seconds);
-      const act=(q.get('action')||'').toLowerCase();
-      if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(seconds); }
-      if(act==='record'){ tilføjRegistrering(); }
-    }
-  } else {
-    const act=(q.get('action')||'').toLowerCase();
-    if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(0); }
-  }
-}
+function applyQueryParams(){ const q=new URLSearchParams(window.location.search); if(![...q.keys()].length) return; const setIf=(id,val)=>{ if(val!=null && val!=='') document.getElementById(id).value=val; }; const dt=q.get('datetime'); if(dt){ const d=new Date(dt); if(!isNaN(d)){ document.getElementById('dato').value = toLocalIsoNoTZ(d); document.getElementById('datoVis')._flatpickr.setDate(d, true); } } setIf('username', q.get('username')); setIf('projektnr', q.get('projektnr')); setIf('aktivitet', q.get('aktivitet')); setIf('sag', q.get('sag')); setIf('opgave', q.get('opgave')); const tid=q.get('tid'); if(tid){ let seconds=null; if(tid.includes(':')){ seconds=parseHMStoSeconds(tid); if(seconds==null) seconds=parseDDHHMMtoSeconds(tid); } else { const num=parseFloat(tid.replace(',','.')); if(!Number.isNaN(num)) seconds=Math.round(num*3600); } if(seconds!=null){ document.getElementById('timer').value = formatHMS(seconds); const act=(q.get('action')||'').toLowerCase(); if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(seconds); } if(act==='record'){ tilføjRegistrering(); } } } else { const act=(q.get('action')||'').toLowerCase(); if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(0); } } }
 
 // ===== Init =====
+function bindSettingButtons(){ document.getElementById('btnGenSamples').addEventListener('click', genSamples102); document.getElementById('btnDeleteAll').addEventListener('click', deleteAll); }
+
 document.addEventListener('DOMContentLoaded', ()=>{
   const now=new Date();
   initDatePicker(now);
   setThresholdToUI();
+  bindSettingButtons();
   visRegistreringer();
   applyQueryParams();
 
-  document.getElementById('searchInput').addEventListener('input', (e)=>{
-    currentSearch = e.target.value || '';
-    currentPage = 1;
-    visRegistreringer();
-  });
-
-  document.querySelectorAll('th.sortable').forEach(th=>{
-    th.addEventListener('click', ()=>{
-      const col = th.getAttribute('data-col');
-      if(currentSort.col===col){
-        currentSort.dir = currentSort.dir==='asc'?'desc':'asc';
-      }else{
-        currentSort.col=col; currentSort.dir='asc';
-      }
-      currentPage = 1;
-      visRegistreringer();
-    });
-  });
-
-  document.getElementById('resumeThreshold').addEventListener('change', ()=>{
-    const v=document.getElementById('resumeThreshold').value;
-    const n=parseInt(v,10);
-    localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10');
-  });
+  document.getElementById('searchInput').addEventListener('input', (e)=>{ currentSearch = e.target.value || ''; currentPage = 1; visRegistreringer(); });
+  document.querySelectorAll('th.sortable').forEach(th=>{ th.addEventListener('click', ()=>{ const col = th.getAttribute('data-col'); if(currentSort.col===col){ currentSort.dir = currentSort.dir==='asc'?'desc':'asc'; }else{ currentSort.col=col; currentSort.dir='asc'; } currentPage = 1; visRegistreringer(); }); });
+  document.getElementById('resumeThreshold').addEventListener('change', ()=>{ const v=document.getElementById('resumeThreshold').value; const n=parseInt(v,10); localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10'); });
 });
 </script>
 </body>
