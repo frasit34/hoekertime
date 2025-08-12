@@ -5,31 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Tidsregistrering</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+  th.sortable { cursor: pointer; }
+  th.sortable .sort-ind { opacity: .6; font-size: .9em; margin-left: .25rem; }
+</style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
   <h1 class="text-center mb-4">Tidsregistrering</h1>
 
-  <!-- Indstillinger -->
-  <div class="card p-3 shadow-sm mb-3">
-    <div class="row g-3 align-items-end">
-      <div class="col-sm-6 col-md-4">
-        <label for="resumeThreshold" class="form-label">Fortsæt hvis arkiveret inden (minutter)</label>
-        <input type="number" id="resumeThreshold" class="form-control" min="0" step="1" placeholder="10">
-      </div>
-      <div class="col-sm-6 col-md-8">
-        <small class="text-muted d-block">
-          “Start her” fortsætter fra tidligere tid, hvis postens <em>dato+tid</em> er nyere end grænsen; ellers startes fra 0. Ved fortsættelse sættes dato+tid til nu, og “Tilføj” erstatter posten.
-        </small>
+  <!-- Indstillinger (skjult bag knap) -->
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <div class="input-group w-auto">
+      <span class="input-group-text">Søg</span>
+      <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
+    </div>
+    <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#settingsPanel" aria-expanded="false">
+      Indstillinger
+    </button>
+  </div>
+
+  <div id="settingsPanel" class="collapse">
+    <div class="card p-3 shadow-sm mb-3">
+      <div class="row g-3 align-items-end">
+        <div class="col-sm-6 col-md-4">
+          <label for="resumeThreshold" class="form-label">Fortsæt hvis arkiveret inden (minutter)</label>
+          <input type="number" id="resumeThreshold" class="form-control" min="0" step="1" placeholder="10">
+        </div>
+        <div class="col-sm-6 col-md-8">
+          <small class="text-muted d-block">
+            “Start her” fortsætter fra tidligere tid, hvis postens <em>dato+tid</em> er nyere end grænsen; ellers startes fra 0. Ved fortsættelse sættes dato+tid til nu, og “Tilføj” erstatter posten.
+          </small>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Formular -->
   <div class="card p-3 shadow-sm">
     <div class="row g-3">
       <div class="col-md-4">
-        <label for="dato" class="form-label">Dato + tid:</label>
-        <input type="datetime-local" id="dato" class="form-control" />
+        <label class="form-label">Dato + tid:</label>
+        <input type="text" id="datoVis" class="form-control" placeholder="dd/mm/yyyy hh:mm:ss" />
+        <input type="hidden" id="dato" />
       </div>
       <div class="col-md-4">
         <label for="projektnr" class="form-label">Projektnummer:</label>
@@ -49,7 +68,7 @@
         <input type="text" id="sag" class="form-control" maxlength="10" placeholder="Sag #" />
       </div>
       <div class="col-md-3">
-        <label for="timer" class="form-label">Tid (HH:MM:SS eller dec.)</label>
+        <label for="timer" class="form-label">Tid (HH:MM:SS / DD:HH:MM / dec.)</label>
         <input type="text" id="timer" class="form-control" placeholder="00:00:00 eller 1,5" />
       </div>
 
@@ -60,190 +79,225 @@
     </div>
   </div>
 
-  <div class="mt-4 d-flex justify-content-between">
+  <!-- Toplinje: Eksport -->
+  <div class="mt-4 d-flex justify-content-between align-items-center">
     <h4>Registreringer</h4>
     <button onclick="eksporterCSV()" class="btn btn-success btn-sm">Eksporter til CSV</button>
   </div>
 
-  <table class="table table-striped table-bordered shadow-sm mt-2">
-    <thead class="table-dark">
-      <tr>
-        <th>Dato + tid</th>
-        <th>Projektnr</th>
-        <th>Aktivitetskode</th>
-        <th>Sag #</th>
-        <th>Beskrivelse</th>
-        <th>Tid (HH:MM:SS)</th>
-        <th>Handling</th>
-      </tr>
-    </thead>
-    <tbody id="tabelBody"></tbody>
-  </table>
+  <!-- Tabel -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered shadow-sm mt-2" id="regTable">
+      <thead class="table-dark">
+        <tr>
+          <th class="sortable" data-col="dato">Dato + tid <span class="sort-ind"></span></th>
+          <th class="sortable" data-col="projektnr">Projektnr <span class="sort-ind"></span></th>
+          <th class="sortable" data-col="aktivitet">Aktivitetskode <span class="sort-ind"></span></th>
+          <th class="sortable" data-col="sag">Sag # <span class="sort-ind"></span></th>
+          <th class="sortable" data-col="opgave">Beskrivelse <span class="sort-ind"></span></th>
+          <th class="sortable" data-col="seconds">Tid (HH:MM:SS) <span class="sort-ind"></span></th>
+          <th>Handling</th>
+        </tr>
+      </thead>
+      <tbody id="tabelBody"></tbody>
+    </table>
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/da.js"></script>
 <script>
 // ===== Utils =====
 function pad2(n){ return String(n).padStart(2,'0'); }
-function nowLocalDatetimeValue(){
-  const d = new Date();
-  d.setSeconds(0,0);
-  const y = d.getFullYear();
-  const m = pad2(d.getMonth()+1);
-  const da = pad2(d.getDate());
-  const h = pad2(d.getHours());
-  const mi = pad2(d.getMinutes());
-  return `${y}-${m}-${da}T${h}:${mi}`; // for <input type="datetime-local">
+function toLocalIsoNoTZ(d){
+  const y=d.getFullYear(), m=pad2(d.getMonth()+1), da=pad2(d.getDate());
+  const h=pad2(d.getHours()), mi=pad2(d.getMinutes()), s=pad2(d.getSeconds());
+  return `${y}-${m}-${da}T${h}:${mi}:${s}`;
 }
-const daFmt = new Intl.DateTimeFormat('da-DK', {
-  dateStyle: 'short', timeStyle: 'short', hour12: false
-});
-function formatDa(dateTimeLocalValue){
-  // dateTimeLocalValue = "YYYY-MM-DDTHH:MM"
-  const d = new Date(dateTimeLocalValue);
-  if (isNaN(d)) return dateTimeLocalValue || '';
-  return daFmt.format(d);
+function fromLocalIsoNoTZ(str){
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
+  if(!m) return new Date(NaN);
+  const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
+  return new Date(Y,Mo-1,D,H,Mi,S,0);
 }
-function formatHMS(totalSeconds) {
-  const hh = pad2(Math.floor(totalSeconds / 3600));
-  const mm = pad2(Math.floor((totalSeconds % 3600) / 60));
-  const ss = pad2(totalSeconds % 60);
+function formatDa_ddmmyyyy_hhmmss(localIsoStr){
+  const d = fromLocalIsoNoTZ(localIsoStr);
+  if (isNaN(d)) return localIsoStr || '';
+  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+function formatHMS(totalSeconds){
+  const hh=pad2(Math.floor(totalSeconds/3600));
+  const mm=pad2(Math.floor((totalSeconds%3600)/60));
+  const ss=pad2(totalSeconds%60);
   return `${hh}:${mm}:${ss}`;
 }
-function parseHMStoSeconds(v) {
-  const parts = v.split(':');
-  if (parts.length < 2 || parts.length > 3) return null;
-  const hh = parseInt(parts[0] || '0', 10);
-  const mm = parseInt(parts[1] || '0', 10);
-  const ss = parseInt((parts[2] || '0'), 10);
-  if ([hh, mm, ss].some(n => Number.isNaN(n) || n < 0)) return null;
-  return hh * 3600 + mm * 60 + ss;
+function parseHMStoSeconds(v){
+  const p=v.split(':'); if(p.length<2||p.length>3) return null;
+  const hh=parseInt(p[0]||'0',10), mm=parseInt(p[1]||'0',10), ss=parseInt((p[2]||'0'),10);
+  if([hh,mm,ss].some(n=>Number.isNaN(n)||n<0)) return null;
+  return hh*3600+mm*60+ss;
 }
 function parseDDHHMMtoSeconds(v){
-  const parts = v.split(':');
-  if (parts.length !== 3) return null;
-  const dd = parseInt(parts[0] || '0', 10);
-  const hh = parseInt(parts[1] || '0', 10);
-  const mm = parseInt(parts[2] || '0', 10);
-  if ([dd, hh, mm].some(n => Number.isNaN(n) || n < 0)) return null;
-  return dd*86400 + hh*3600 + mm*60;
+  const p=v.split(':'); if(p.length!==3) return null;
+  const dd=parseInt(p[0]||'0',10), hh=parseInt(p[1]||'0',10), mm=parseInt(p[2]||'0',10);
+  if([dd,hh,mm].some(n=>Number.isNaN(n)||n<0)) return null;
+  return dd*86400+hh*3600+mm*60;
 }
 
 // ===== LocalStorage helpers =====
-function hentRegistreringer() {
-  return JSON.parse(localStorage.getItem('registreringer') || '[]');
+function hentRegistreringer(){ return JSON.parse(localStorage.getItem('registreringer')||'[]'); }
+function gemRegistreringer(rs){ localStorage.setItem('registreringer', JSON.stringify(rs)); }
+function getThresholdMinutes(){
+  const ui=parseInt(document.getElementById('resumeThreshold').value||'',10);
+  if(!Number.isNaN(ui)&&ui>=0) return ui;
+  const ls=parseInt(localStorage.getItem('resumeThresholdMin')||'',10);
+  return Number.isNaN(ls)?10:ls;
 }
-function gemRegistreringer(registreringer) {
-  localStorage.setItem('registreringer', JSON.stringify(registreringer));
-}
-function getThresholdMinutes() {
-  const ui = parseInt(document.getElementById('resumeThreshold').value || '', 10);
-  if (!Number.isNaN(ui) && ui >= 0) return ui;
-  const ls = parseInt(localStorage.getItem('resumeThresholdMin') || '', 10);
-  return Number.isNaN(ls) ? 10 : ls;
-}
-function setThresholdToUI() {
-  const saved = localStorage.getItem('resumeThresholdMin');
+function setThresholdToUI(){
+  const saved=localStorage.getItem('resumeThresholdMin');
   document.getElementById('resumeThreshold').value = saved ?? '10';
 }
 
-// ===== Tabelvisning =====
-function visRegistreringer() {
-  const tabel = document.getElementById('tabelBody');
-  tabel.innerHTML = '';
-  const registreringer = hentRegistreringer();
+// ===== Global UI state (sort + search) =====
+let currentSort = { col:'dato', dir:'desc' };
+let currentSearch = '';
 
-  registreringer.forEach((r, index) => {
-    const row = tabel.insertRow();
-    row.insertCell(0).textContent = formatDa(r.dato); // dansk visning
-    row.insertCell(1).textContent = r.projektnr;
-    row.insertCell(2).textContent = r.aktivitet;
-    row.insertCell(3).textContent = r.sag || '';
-    row.insertCell(4).textContent = r.opgave;
+// ===== Tabelrender med søg/sort =====
+function getDisplayRows(){
+  const rows = hentRegistreringer().map((r, idx)=>({
+    ...r,
+    _index: idx,
+    _seconds: Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600),
+    _datoMs: r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : 0
+  }));
+  // filter
+  const q = currentSearch.trim().toLowerCase();
+  const filtered = q ? rows.filter(r=>{
+    const fields = [
+      formatDa_ddmmyyyy_hhmmss(r.dato),
+      r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
+      formatHMS(r._seconds)
+    ].join(' ').toLowerCase();
+    return fields.includes(q);
+  }) : rows;
 
-    const seconds = Number.isFinite(r.seconds) ? r.seconds : Math.round(parseFloat(r.timer || 0) * 3600);
-    row.insertCell(5).textContent = formatHMS(seconds);
+  // sort
+  const { col, dir } = currentSort;
+  const sgn = dir==='asc'?1:-1;
+  filtered.sort((a,b)=>{
+    let va, vb;
+    if(col==='seconds'){ va=a._seconds; vb=b._seconds; }
+    else if(col==='dato'){ va=a._datoMs; vb=b._datoMs; }
+    else { va=(a[col]||'').toString().toLowerCase(); vb=(b[col]||'').toString().toLowerCase(); }
+    if(va<vb) return -1*sgn;
+    if(va>vb) return 1*sgn;
+    return 0;
+  });
+  return filtered;
+}
 
-    const actionCell = row.insertCell(6);
+function visRegistreringer(){
+  const tbody = document.getElementById('tabelBody');
+  tbody.innerHTML = '';
+  const data = getDisplayRows();
+
+  data.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${formatDa_ddmmyyyy_hhmmss(r.dato)}</td>
+      <td>${r.projektnr||''}</td>
+      <td>${r.aktivitet||''}</td>
+      <td>${r.sag||''}</td>
+      <td>${r.opgave||''}</td>
+      <td>${formatHMS(r._seconds)}</td>
+      <td></td>
+    `;
+    const actions = tr.lastElementChild;
 
     const startBtn = document.createElement('button');
-    startBtn.className = 'btn btn-sm btn-outline-success me-1';
-    startBtn.textContent = 'Start her';
-    startBtn.onclick = () => startFromRow(index);
-    actionCell.appendChild(startBtn);
+    startBtn.className='btn btn-sm btn-outline-success me-1';
+    startBtn.textContent='Start her';
+    startBtn.onclick = ()=> startFromRow(r._index);
+    actions.appendChild(startBtn);
 
     const dupBtn = document.createElement('button');
-    dupBtn.className = 'btn btn-sm btn-outline-primary me-1';
-    dupBtn.textContent = 'Dupliker';
-    dupBtn.onclick = () => duplicateToForm(index);
-    actionCell.appendChild(dupBtn);
+    dupBtn.className='btn btn-sm btn-outline-primary me-1';
+    dupBtn.textContent='Dupliker';
+    dupBtn.onclick = ()=> duplicateToForm(r._index);
+    actions.appendChild(dupBtn);
 
-    const sletBtn = document.createElement('button');
-    sletBtn.className = 'btn btn-sm btn-danger';
-    sletBtn.textContent = 'Slet';
-    sletBtn.onclick = () => {
-      if (confirm('Er du sikker på, at du vil slette denne registrering?')) {
-        registreringer.splice(index, 1);
-        gemRegistreringer(registreringer);
+    const delBtn = document.createElement('button');
+    delBtn.className='btn btn-sm btn-danger';
+    delBtn.textContent='Slet';
+    delBtn.onclick = ()=>{
+      if(confirm('Er du sikker på, at du vil slette denne registrering?')){
+        const all = hentRegistreringer();
+        all.splice(r._index,1);
+        gemRegistreringer(all);
         visRegistreringer();
       }
     };
-    actionCell.appendChild(sletBtn);
+    actions.appendChild(delBtn);
+
+    tbody.appendChild(tr);
   });
+
+  // opdater sort indikator
+  document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='');
+  const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`);
+  if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
 }
 
 // ===== Timer-state =====
-let timerInterval = null;
-let startTimeMs = null;         // reference start (inkl. baseline)
-let accumulatedSeconds = 0;     // baseline + løbende tid
-let editingIndex = null;        // hvis sat: Tilføj erstatter denne post
-let resumeReplace = false;      // true hvis vi fortsætter samme post
+let timerInterval=null, startTimeMs=null, accumulatedSeconds=0;
+let editingIndex=null, resumeReplace=false;
 
-function setForm(r) {
-  document.getElementById('dato').value = r.dato; // datetime-local value
-  document.getElementById('projektnr').value = r.projektnr;
-  document.getElementById('aktivitet').value = r.aktivitet;
-  document.getElementById('opgave').value = r.opgave;
-  document.getElementById('sag').value = r.sag || '';
+function setForm(r){
+  // dato (hidden+vis)
+  document.getElementById('dato').value = r.dato;
+  const d = fromLocalIsoNoTZ(r.dato);
+  document.getElementById('datoVis')._flatpickr.setDate(d, true);
+  // øvrige
+  document.getElementById('projektnr').value = r.projektnr||'';
+  document.getElementById('aktivitet').value = r.aktivitet||'';
+  document.getElementById('opgave').value = r.opgave||'';
+  document.getElementById('sag').value = r.sag||'';
 }
-function stopTimerUI() {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-  const btn = document.getElementById('timerBtn');
-  if (btn) btn.textContent = 'Start';
+function stopTimerUI(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+  document.getElementById('timerBtn').textContent='Start';
 }
-function startTimerUIFromSeconds(seconds) {
-  accumulatedSeconds = seconds;
-  startTimeMs = Date.now() - seconds * 1000;
-  const btn = document.getElementById('timerBtn');
-  if (btn) btn.textContent = 'Stop';
-
+function startTimerUIFromSeconds(seconds){
+  accumulatedSeconds=seconds;
+  startTimeMs = Date.now() - seconds*1000;
+  document.getElementById('timerBtn').textContent='Stop';
   document.getElementById('timer').value = formatHMS(accumulatedSeconds);
-  timerInterval = setInterval(() => {
-    const totalSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
+  timerInterval = setInterval(()=>{
+    const totalSeconds = Math.floor((Date.now()-startTimeMs)/1000);
     document.getElementById('timer').value = formatHMS(totalSeconds);
   }, 250);
 }
 
-function startFromRow(index) {
-  const registreringer = hentRegistreringer();
-  const r = registreringer[index];
-  if (!r) return;
+function startFromRow(index){
+  const all = hentRegistreringer();
+  const r = all[index];
+  if(!r) return;
 
   const thresholdMin = getThresholdMinutes();
-  const recordTime = r.dato ? new Date(r.dato).getTime() : Date.now();
-  const withinWindow = (Date.now() - recordTime) <= thresholdMin * 60 * 1000;
+  const recordTimeMs = r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : Date.now();
+  const withinWindow = (Date.now() - recordTimeMs) <= thresholdMin*60*1000;
 
   const copy = { ...r };
-  if (withinWindow) {
-    copy.dato = nowLocalDatetimeValue(); // dagsdato+tid ved fortsættelse
+  if(withinWindow){
+    const now = new Date();
+    copy.dato = toLocalIsoNoTZ(now); // sæt til nu (vises dansk)
   }
   setForm(copy);
 
   const baseline = withinWindow
-      ? (Number.isFinite(r.seconds) ? r.seconds : Math.round(parseFloat(r.timer || 0) * 3600))
-      : 0;
+    ? (Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600))
+    : 0;
 
   editingIndex = withinWindow ? index : null;
   resumeReplace = withinWindow;
@@ -252,173 +306,125 @@ function startFromRow(index) {
   startTimerUIFromSeconds(baseline);
 }
 
-function duplicateToForm(index) {
-  const registreringer = hentRegistreringer();
-  const r = registreringer[index];
-  if (!r) return;
+function duplicateToForm(index){
+  const all = hentRegistreringer();
+  const r = all[index];
+  if(!r) return;
 
   setForm(r);
-
-  const seconds = Number.isFinite(r.seconds)
-    ? r.seconds
-    : Math.round(parseFloat(r.timer || 0) * 3600);
-
+  const seconds = Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600);
   document.getElementById('timer').value = formatHMS(seconds);
 
   stopTimerUI();
-  accumulatedSeconds = 0;
-  editingIndex = null;
-  resumeReplace = false;
+  accumulatedSeconds=0;
+  editingIndex=null;
+  resumeReplace=false;
 }
 
-// Start/Stop knap (manuel)
-function startStopTimer() {
-  const btn = document.getElementById('timerBtn');
-  if (timerInterval) {
-    const now = Date.now();
-    const runningSeconds = Math.floor((now - startTimeMs) / 1000);
-    accumulatedSeconds = runningSeconds;
-    clearInterval(timerInterval);
-    timerInterval = null;
-    btn.textContent = 'Start';
+function startStopTimer(){
+  const btn=document.getElementById('timerBtn');
+  if(timerInterval){
+    const runningSeconds=Math.floor((Date.now()-startTimeMs)/1000);
+    accumulatedSeconds=runningSeconds;
+    clearInterval(timerInterval); timerInterval=null;
+    btn.textContent='Start';
     document.getElementById('timer').value = formatHMS(accumulatedSeconds);
     return;
   }
-
-  let baseline = 0;
-  const v = (document.getElementById('timer').value || '').trim();
-  if (v.includes(':')) {
-    // støtte både HH:MM:SS og DD:HH:MM
+  // baseline fra felt
+  let baseline=0, v=(document.getElementById('timer').value||'').trim();
+  if(v.includes(':')){
     baseline = parseHMStoSeconds(v);
-    if (baseline == null) {
-      const ddhhmm = parseDDHHMMtoSeconds(v);
-      baseline = ddhhmm != null ? ddhhmm : 0;
-    }
-  } else if (v) {
-    const num = parseFloat(v.replace(',', '.'));
-    if (!Number.isNaN(num) && num >= 0) baseline = Math.round(num * 3600);
+    if(baseline==null) baseline = parseDDHHMMtoSeconds(v) ?? 0;
+  } else if(v){
+    const num=parseFloat(v.replace(',', '.')); if(!Number.isNaN(num)&&num>=0) baseline=Math.round(num*3600);
   }
   startTimerUIFromSeconds(baseline);
 }
 
 // ===== Tilføj registrering =====
-function tilføjRegistrering() {
-  const dato = document.getElementById('dato').value; // datetime-local streng
+function tilføjRegistrering(){
+  const datoIso = document.getElementById('dato').value; // lokal ISO "YYYY-MM-DDTHH:MM:SS"
   const projektnr = document.getElementById('projektnr').value;
   const aktivitet = document.getElementById('aktivitet').value;
   const opgave = document.getElementById('opgave').value;
   const sag = document.getElementById('sag').value;
-  const field = document.getElementById('timer');
-  let timerInput = field.value.trim();
+  let t = (document.getElementById('timer').value||'').trim();
 
-  if (!dato || !projektnr || !aktivitet || !opgave || !timerInput) {
-    alert('Udfyld alle felter.');
-    return;
-  }
+  if(!datoIso || !projektnr || !aktivitet || !opgave || !t){ alert('Udfyld alle felter.'); return; }
 
   let totalSeconds;
-  if (timerInterval) {
-    totalSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
-  } else if (timerInput.includes(':')) {
-    // HH:MM:SS eller DD:HH:MM
-    let s = parseHMStoSeconds(timerInput);
-    if (s == null) s = parseDDHHMMtoSeconds(timerInput);
-    if (s == null) {
-      alert('Ugyldigt tidsformat. Brug HH:MM:SS, DD:HH:MM eller decimaltal.');
-      return;
-    }
-    totalSeconds = s;
+  if(timerInterval){
+    totalSeconds = Math.floor((Date.now()-startTimeMs)/1000);
+  } else if(t.includes(':')){
+    let s=parseHMStoSeconds(t); if(s==null) s=parseDDHHMMtoSeconds(t);
+    if(s==null){ alert('Ugyldigt tidsformat. Brug HH:MM:SS, DD:HH:MM eller decimaltal.'); return; }
+    totalSeconds=s;
   } else {
-    const num = parseFloat(timerInput.replace(',', '.'));
-    if (Number.isNaN(num)) {
-      alert('Tid skal være et tal eller i formatet HH:MM:SS / DD:HH:MM');
-      return;
-    }
-    totalSeconds = Math.round(num * 3600);
+    const num=parseFloat(t.replace(',', '.'));
+    if(Number.isNaN(num)){ alert('Tid skal være et tal eller HH:MM:SS / DD:HH:MM'); return; }
+    totalSeconds = Math.round(num*3600);
   }
 
-  const timerHours = totalSeconds / 3600;
   const now = Date.now();
+  const rec = { dato:datoIso, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
 
-  const registreringer = hentRegistreringer();
-  const record = {
-    dato, projektnr, aktivitet, opgave, sag,
-    seconds: totalSeconds,
-    timer: timerHours,     // decimal for CSV
-    savedAt: now
-  };
-
-  if (resumeReplace && editingIndex !== null && registreringer[editingIndex]) {
-    registreringer[editingIndex] = record; // erstat
+  const all = hentRegistreringer();
+  if(resumeReplace && editingIndex!=null && all[editingIndex]){
+    all[editingIndex] = rec;
   } else {
-    registreringer.push(record); // ny
+    all.push(rec);
   }
-
-  gemRegistreringer(registreringer);
+  gemRegistreringer(all);
   visRegistreringer();
 
-  // nulstil form og state
-  document.getElementById('dato').value = nowLocalDatetimeValue();
-  document.getElementById('projektnr').value = '';
-  document.getElementById('aktivitet').value = '';
-  document.getElementById('opgave').value = '';
-  document.getElementById('sag').value = '';
-  field.value = '';
-  accumulatedSeconds = 0;
-  editingIndex = null;
-  resumeReplace = false;
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-  const btn = document.getElementById('timerBtn');
-  btn.textContent = 'Start';
+  // nulstil form + timer
+  const dNow=new Date();
+  document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
+  document.getElementById('datoVis')._flatpickr.setDate(dNow, true);
+  document.getElementById('projektnr').value='';
+  document.getElementById('aktivitet').value='';
+  document.getElementById('opgave').value='';
+  document.getElementById('sag').value='';
+  document.getElementById('timer').value='';
+  accumulatedSeconds=0; editingIndex=null; resumeReplace=false;
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+  document.getElementById('timerBtn').textContent='Start';
 }
 
-// ===== CSV-eksport =====
-function eksporterCSV() {
-  const registreringer = hentRegistreringer();
-  if (registreringer.length === 0) {
-    alert('Der er ingen registreringer at eksportere.');
-    return;
-  }
+// ===== CSV-eksport (samme formater som visning) =====
+function eksporterCSV(){
+  const all = getDisplayRows(); // respekter evt. søg/sort i eksporten
+  if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
 
-  const header = 'DatoTid;Projektnr;Aktivitetskode;Sag;Beskrivelse;Timer';
-  const rows = registreringer.map(r =>
-    `${r.dato};${r.projektnr};${r.aktivitet};${(r.sag||'')};${r.opgave};${(r.seconds/3600).toFixed(2).replace('.', ',')}`
-  );
+  const header = 'DatoTid;Projektnr;Aktivitetskode;Sag;Beskrivelse;Tid';
+  const rows = all.map(r=>{
+    const dt = formatDa_ddmmyyyy_hhmmss(r.dato);
+    const tid = formatHMS(r._seconds);
+    return `${dt};${r.projektnr||''};${r.aktivitet||''};${r.sag||''};${(r.opgave||'').replaceAll(';',',')};${tid}`;
+  });
   const csv = [header, ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'tidsregistrering.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const a=document.createElement('a'); a.href=url; a.download='tidsregistrering.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-// ===== GET-parametre (auto-udfyld/handling) =====
-function applyQueryParams() {
-  const q = new URLSearchParams(window.location.search);
-  if (![...q.keys()].length) return;
+// ===== GET-parametre =====
+function applyQueryParams(){
+  const q=new URLSearchParams(window.location.search);
+  if(![...q.keys()].length) return;
 
-  const setIf = (id, val) => { if (val != null && val !== '') document.getElementById(id).value = val; };
+  const setIf=(id,val)=>{ if(val!=null && val!=='') document.getElementById(id).value=val; };
 
-  // datetime (dato+tid)
-  const dt = q.get('datetime');
-  if (dt) {
-    const d = new Date(dt);
-    if (!isNaN(d)) {
-      // til datetime-local value (lokal tid)
-      const y = d.getFullYear();
-      const m = pad2(d.getMonth()+1);
-      const da = pad2(d.getDate());
-      const h = pad2(d.getHours());
-      const mi = pad2(d.getMinutes());
-      setIf('dato', `${y}-${m}-${da}T${h}:${mi}`);
+  // datetime
+  const dt=q.get('datetime');
+  if(dt){
+    const d=new Date(dt);
+    if(!isNaN(d)){
+      document.getElementById('dato').value = toLocalIsoNoTZ(d);
+      document.getElementById('datoVis')._flatpickr.setDate(d, true);
     }
   }
 
@@ -427,57 +433,65 @@ function applyQueryParams() {
   setIf('sag', q.get('sag'));
   setIf('opgave', q.get('opgave'));
 
-  // tid: decimal eller DD:HH:MM / HH:MM:SS
-  const tid = q.get('tid');
-  if (tid) {
-    let seconds = null;
-    if (tid.includes(':')) {
-      seconds = parseHMStoSeconds(tid);
-      if (seconds == null) seconds = parseDDHHMMtoSeconds(tid);
-    } else {
-      const num = parseFloat(tid.replace(',', '.'));
-      if (!Number.isNaN(num)) seconds = Math.round(num * 3600);
-    }
-    if (seconds != null) {
+  const tid=q.get('tid');
+  if(tid){
+    let seconds=null;
+    if(tid.includes(':')){ seconds=parseHMStoSeconds(tid); if(seconds==null) seconds=parseDDHHMMtoSeconds(tid); }
+    else { const num=parseFloat(tid.replace(',','.')); if(!Number.isNaN(num)) seconds=Math.round(num*3600); }
+    if(seconds!=null){
       document.getElementById('timer').value = formatHMS(seconds);
-      // Hvis action=timer ⇒ start tæller fra baseline
-      if ((q.get('action') || '').toLowerCase() === 'timer') {
-        stopTimerUI();
-        startTimerUIFromSeconds(seconds);
-      }
-      // Hvis action=record ⇒ gem med det samme
-      if ((q.get('action') || '').toLowerCase() === 'record') {
-        tilføjRegistrering();
-      }
-      // draft: gør intet (felter er udfyldt)
+      const act=(q.get('action')||'').toLowerCase();
+      if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(seconds); }
+      if(act==='record'){ tilføjRegistrering(); }
     }
   } else {
-    // ingen tid angivet, men hvis action=timer, start fra 0
-    if ((q.get('action') || '').toLowerCase() === 'timer') {
-      stopTimerUI();
-      startTimerUIFromSeconds(0);
-    }
-    if ((q.get('action') || '').toLowerCase() === 'record') {
-      // uden tid giver det ingen mening at gemme -> ignorer
-    }
+    const act=(q.get('action')||'').toLowerCase();
+    if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(0); }
   }
 }
 
-// ===== Init ved load =====
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('dato').value = nowLocalDatetimeValue();
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Flatpickr init
+  const now=new Date();
+  document.getElementById('dato').value = toLocalIsoNoTZ(now);
+  flatpickr("#datoVis", {
+    enableTime:true, time_24hr:true, enableSeconds:true,
+    dateFormat:"d/m/Y H:i:S", locale: flatpickr.l10ns.da,
+    defaultDate: now,
+    onChange: (dates)=>{ if(dates && dates[0]) document.getElementById('dato').value = toLocalIsoNoTZ(dates[0]); }
+  });
+  document.getElementById('datoVis')._flatpickr.setDate(now, true);
+
   setThresholdToUI();
   visRegistreringer();
+  applyQueryParams();
 
-  document.getElementById('resumeThreshold').addEventListener('change', () => {
-    const v = document.getElementById('resumeThreshold').value;
-    const n = parseInt(v, 10);
-    localStorage.setItem('resumeThresholdMin', (!Number.isNaN(n) && n >= 0) ? String(n) : '10');
+  document.getElementById('resumeThreshold').addEventListener('change', ()=>{
+    const v=document.getElementById('resumeThreshold').value;
+    const n=parseInt(v,10);
+    localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10');
   });
 
-  applyQueryParams(); // håndter GET-parametre
+  // Søg
+  document.getElementById('searchInput').addEventListener('input', (e)=>{
+    currentSearch = e.target.value || '';
+    visRegistreringer();
+  });
+
+  // Sort (klik på header)
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const col = th.getAttribute('data-col');
+      if(currentSort.col===col){
+        currentSort.dir = currentSort.dir==='asc'?'desc':'asc';
+      }else{
+        currentSort.col=col; currentSort.dir='asc';
+      }
+      visRegistreringer();
+    });
+  });
 });
 </script>
 </body>
 </html>
- 
