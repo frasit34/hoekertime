@@ -31,14 +31,14 @@
     </button>
   </div>
 
-  <!-- Indstillinger (skjult) -->
+  <!-- Indstillinger -->
   <div id="settingsPanel" class="collapse">
     <div class="card p-3 shadow-sm mb-3">
       <div class="row g-3 align-items-end">
         <div class="col-lg-4">
           <label for="resumeThreshold" class="form-label">Fortsæt hvis arkiveret inden (minutter)</label>
           <input type="number" id="resumeThreshold" class="form-control" min="0" step="1" placeholder="10">
-          <div class="small-muted mt-1">“Start her” fortsætter fra en tidligere registrering, hvis postens dato+tid er nyere end grænsen. Ellers startes fra 0 som ny post.</div>
+          <div class="small-muted mt-1">“Start her” fortsætter fra en tidligere registrering, hvis postens dato+tid er nyere end grænsen. Ellers startes fra 0.</div>
         </div>
         <div class="col-lg-8">
           <div class="border rounded p-2 bg-light">
@@ -49,7 +49,7 @@
             </div>
             <div class="small-muted mt-2">
               • <strong>Generér</strong> opretter op til 102000 demo-poster (datoer, felter og tid).<br>
-              • <strong>Slet alle</strong> tømmer tabellen og lokal lagring. Begge kræver bekræftelse.
+              • <strong>Slet alle</strong> tømmer tabellen (IndexedDB). Begge kræver bekræftelse.
             </div>
           </div>
         </div>
@@ -57,20 +57,20 @@
     </div>
   </div>
 
-  <!-- Hjælp (skjult) -->
+  <!-- Hjælp -->
   <div id="helpPanel" class="collapse">
     <div class="card p-3 shadow-sm mb-3">
       <h5 class="mb-3">Hvordan virker siden?</h5>
       <dl class="help-list">
         <dt>Formål</dt>
-        <dd>Hurtig tidsregistrering i browseren. Data gemmes i <em>LocalStorage</em> på denne enhed. Du kan starte/stoppe timer, kopiere tidligere rækker og eksportere til Excel.</dd>
+        <dd>Hurtig tidsregistrering i browseren. Data gemmes i <em>IndexedDB</em> på denne enhed. Du kan starte/stoppe timer, kopiere tidligere rækker og eksportere til Excel.</dd>
 
         <dt>Felter</dt>
         <dd>
           <ul class="mb-2">
-            <li><strong>Dato + tid</strong>: vælg i dansk format (24t med sekunder).</li>
-            <li><strong>Brugernavn</strong>: e-mailadresse (valideres).</li>
-            <li><strong>Projektnummer</strong> (7 cifre, starter med 19–25), <strong>Aktivitetskode</strong> (4 cifre, runde tal), <strong>Sag #</strong> (max 10), <strong>Beskrivelse</strong>.</li>
+            <li><strong>Dato + tid</strong>: dansk format (24t med sekunder).</li>
+            <li><strong>Brugernavn</strong>: e-mail (valideres).</li>
+            <li><strong>Projektnummer</strong> (7 cifre starter med 19–25), <strong>Aktivitetskode</strong> (4 cifre, runde tal), <strong>Sag #</strong> (max 10), <strong>Beskrivelse</strong>.</li>
             <li><strong>Tid</strong>: HH:MM:SS, DD:HH:MM eller decimaltimer (fx 1,5).</li>
           </ul>
         </dd>
@@ -80,10 +80,10 @@
           <ul class="mb-2">
             <li><strong>Start</strong>: starter/stopper timeren (HH:MM:SS live).</li>
             <li><strong>Tilføj</strong>: gemmer posten (erstatter hvis du fortsætter en eksisterende inden for grænsen).</li>
-            <li><strong>Start her</strong>: kopierer en række op i formularen og starter timeren; fortsætter/erstatter hvis inden for grænsen, ellers fra 0 som ny.</li>
-            <li><strong>Dupliker</strong>: kopierer en række op (inkl. tid) uden at starte timeren; “Tilføj” laver ny række.</li>
-            <li><strong>Generér 102000 eksempelrækker</strong>: lægger prøve-data i tabellen (begrænses af LocalStorage-kvote).</li>
-            <li><strong>Slet alle rækker</strong>: tømmer alt (kræver bekræftelse).</li>
+            <li><strong>Start her</strong>: kopierer en række op og starter timeren; fortsætter/erstatter hvis inden for grænsen, ellers ny fra 0.</li>
+            <li><strong>Dupliker</strong>: kopierer en række op (inkl. tid) uden at starte timeren.</li>
+            <li><strong>Generér 102000 eksempelrækker</strong>: lægger prøve-data i databasen.</li>
+            <li><strong>Slet alle rækker</strong>: tømmer databasen (kræver bekræftelse).</li>
           </ul>
         </dd>
 
@@ -104,7 +104,7 @@
             <li><code>action</code>:
               <ul>
                 <li><code>timer</code> – udfyld felter og <em>start</em> timeren.</li>
-                <li><code>record</code> – udfyld og <em>gem straks</em> (tilføjer en række).</li>
+                <li><code>record</code> – udfyld og <em>gem straks</em> i IndexedDB (tilføjer en række).</li>
                 <li><code>draft</code> – <em>kun udfyld</em> formularen, ingen timer/lagring.</li>
               </ul>
             </li>
@@ -216,7 +216,115 @@
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
-// ===== Utils =====
+// ========= IndexedDB (NYT) =========
+const DB_NAME = 'tidsregDB';
+const DB_VERSION = 1;
+const STORE = 'registreringer';
+
+function openDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        const os = db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        os.createIndex('by_datoMs','_datoMs',{unique:false});
+        os.createIndex('by_username','username',{unique:false});
+        os.createIndex('by_projektnr','projektnr',{unique:false});
+        os.createIndex('by_aktivitet','aktivitet',{unique:false});
+        os.createIndex('by_sag','sag',{unique:false});
+        os.createIndex('by_opgave','opgave',{unique:false});
+        os.createIndex('by_seconds','seconds',{unique:false});
+      }
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+
+async function withStore(mode, fn){
+  const db = await openDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(STORE, mode);
+    const os = tx.objectStore(STORE);
+    const res = fn(os, tx);
+    tx.oncomplete = ()=> resolve(res);
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+
+function dbAdd(rec){
+  return withStore('readwrite', os=> os.add(rec));
+}
+function dbUpdateById(id, rec){
+  return withStore('readwrite', os=> os.put({...rec, id}));
+}
+function dbDeleteById(id){
+  return withStore('readwrite', os=> os.delete(id));
+}
+function dbClear(){
+  return withStore('readwrite', os=> os.clear());
+}
+function dbCount(){
+  return withStore('readonly', os=> os.count());
+}
+
+// Hent side via cursor fra valgt indeks og retning, evt. fritekstfilter
+async function dbPage({indexName, dir, page, pageSize, search}){
+  const db = await openDB();
+  const tx = db.transaction(STORE, 'readonly');
+  const os = tx.objectStore(STORE);
+  const idx = indexName ? os.index(indexName) : os;
+
+  const direction = dir==='asc'?'next':'prev';
+  let results = [];
+  let matchedSeen = 0; // antal match ramt (for at skippe sider)
+  const startFrom = (page-1)*pageSize;
+
+  return new Promise((resolve, reject)=>{
+    const req = idx.openCursor(null, direction);
+    req.onerror = ()=> reject(req.error);
+    req.onsuccess = ()=>{
+      const cursor = req.result;
+      if(!cursor){ return resolve(results); }
+      const v = cursor.value;
+      if(matchesSearch(v, search)){
+        if(matchedSeen >= startFrom){
+          results.push(v);
+          if(results.length>=pageSize){ return resolve(results); }
+        }
+        matchedSeen++;
+      }
+      cursor.continue();
+    };
+  });
+}
+
+// Tæl med fritekstfilter (hvis tom: brug count())
+async function dbCountFiltered({search, indexName}){
+  if(!search){ 
+    // hurtig count på primær indeks (eller valgfrit indeks)
+    return withStore('readonly', os=> (indexName? os.index(indexName):os).count());
+  }
+  // ellers iterér og tæl
+  const db = await openDB();
+  const tx = db.transaction(STORE, 'readonly');
+  const os = tx.objectStore(STORE);
+  const idx = indexName ? os.index(indexName) : os;
+  let count=0;
+  return new Promise((resolve, reject)=>{
+    const req = idx.openCursor();
+    req.onerror = ()=> reject(req.error);
+    req.onsuccess = ()=>{
+      const cursor = req.result;
+      if(!cursor) return resolve(count);
+      if(matchesSearch(cursor.value, search)) count++;
+      cursor.continue();
+    };
+  });
+}
+
+// ========= Utils =========
 function pad2(n){ return String(n).padStart(2,'0'); }
 function toLocalIsoNoTZ(d){
   const y=d.getFullYear(), m=pad2(d.getMonth()+1), da=pad2(d.getDate());
@@ -224,7 +332,7 @@ function toLocalIsoNoTZ(d){
   return `${y}-${m}-${da}T${h}:${mi}:${s}`;
 }
 function fromLocalIsoNoTZ(str){
-  const m=/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})$/.exec(str);
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
   if(!m) return new Date(NaN);
   const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
   return new Date(Y,Mo-1,D,H,Mi,S,0);
@@ -254,30 +362,40 @@ function parseDDHHMMtoSeconds(v){
 }
 function isValidEmail(v){
   if(!v) return false;
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-// ===== LocalStorage helpers =====
-function hentRegistreringer(){ return JSON.parse(localStorage.getItem('registreringer')||'[]'); }
-function gemRegistreringer(rs){ localStorage.setItem('registreringer', JSON.stringify(rs)); }
-function getThresholdMinutes(){
-  const ui=parseInt(document.getElementById('resumeThreshold').value||'',10);
-  if(!Number.isNaN(ui)&&ui>=0) return ui;
-  const ls=parseInt(localStorage.getItem('resumeThresholdMin')||'',10);
-  return Number.isNaN(ls)?10:ls;
+// ========= Søge/visningshjælp =========
+function matchesSearch(r, q){
+  if(!q) return true;
+  const s = q.trim().toLowerCase();
+  const fields = [
+    formatDa_ddmmyyyy_hhmmss(r.dato||''),
+    r.username||'', r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
+    formatHMS(Number.isFinite(r.seconds)?r.seconds:0)
+  ].join(' ').toLowerCase();
+  return fields.includes(s);
 }
-function setThresholdToUI(){
-  const saved=localStorage.getItem('resumeThresholdMin');
-  document.getElementById('resumeThreshold').value = saved ?? '10';
+function indexNameForSort(col){
+  switch(col){
+    case 'dato': return 'by_datoMs';
+    case 'username': return 'by_username';
+    case 'projektnr': return 'by_projektnr';
+    case 'aktivitet': return 'by_aktivitet';
+    case 'sag': return 'by_sag';
+    case 'opgave': return 'by_opgave';
+    case 'seconds': return 'by_seconds';
+    default: return 'by_datoMs';
+  }
 }
 
-// ===== Global UI state =====
+// ========= UI state =========
 let currentSort = { col:'dato', dir:'desc' };
 let currentSearch = '';
 const pageSize = 50;
 let currentPage = 1;
 
-// ===== Flatpickr =====
+// ========= Flatpickr =========
 function initDatePicker(now){
   document.getElementById('dato').value = toLocalIsoNoTZ(now);
   flatpickr("#datoVis", {
@@ -289,70 +407,37 @@ function initDatePicker(now){
   document.getElementById('datoVis')._flatpickr.setDate(now, true);
 }
 
-// ===== Data pipeline (filter + sort) =====
-function getDisplayRows(){
-  const rows = hentRegistreringer().map((r, idx)=>({
-    ...r,
-    _index: idx,
-    _seconds: Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600),
-    _datoMs: r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : 0
-  }));
-  const q = currentSearch.trim().toLowerCase();
-  const filtered = q ? rows.filter(r=>{
-    const fields = [
-      formatDa_ddmmyyyy_hhmmss(r.dato),
-      r.username||'', r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
-      formatHMS(r._seconds)
-    ].join(' ').toLowerCase();
-    return fields.includes(q);
-  }) : rows;
-
-  const { col, dir } = currentSort;
-  const sgn = dir==='asc'?1:-1;
-  filtered.sort((a,b)=>{
-    let va, vb;
-    if(col==='seconds'){ va=a._seconds; vb=b._seconds; }
-    else if(col==='dato'){ va=a._datoMs; vb=b._datoMs; }
-    else { va=(a[col]||'').toString().toLowerCase(); vb=(b[col]||'').toString().toLowerCase(); }
-    if(va<vb) return -1*sgn;
-    if(va>vb) return 1*sgn;
-    return 0;
-  });
-  return filtered;
-}
-
-// ===== Pagination =====
+// ========= Pagination helpers =========
 function totalPages(total){ return Math.max(1, Math.ceil(total / pageSize)); }
 function clampPage(p, maxp){ return Math.min(Math.max(1, p), maxp); }
-function gotoPage(p){
-  const maxp = totalPages(getDisplayRows().length);
-  currentPage = clampPage(p, maxp);
-  visRegistreringer();
-}
+function gotoPage(p){ currentPage = p; visRegistreringer(); }
 function gotoPrevPage(){ gotoPage(currentPage-1); }
 function gotoNextPage(){ gotoPage(currentPage+1); }
+
 function renderPagination(totalCount){
   const maxp = totalPages(totalCount);
-  const pageInfo = document.getElementById('pageInfo');
-  const prev = document.getElementById('prevPage');
-  const next = document.getElementById('nextPage');
   currentPage = clampPage(currentPage, maxp);
-  pageInfo.textContent = `Side ${currentPage} af ${maxp}`;
-  prev.disabled = currentPage <= 1;
-  next.disabled = currentPage >= maxp;
+  document.getElementById('pageInfo').textContent = `Side ${currentPage} af ${maxp}`;
+  document.getElementById('prevPage').disabled = currentPage <= 1;
+  document.getElementById('nextPage').disabled = currentPage >= maxp;
 }
 
-// ===== Tabelrender =====
-function visRegistreringer(){
+// ========= Tabelrender (IndexedDB) =========
+async function visRegistreringer(){
   const tbody = document.getElementById('tabelBody');
   tbody.innerHTML = '';
-  const all = getDisplayRows();
-  const total = all.length;
 
-  const start = (currentPage-1)*pageSize;
-  const page = all.slice(start, start + pageSize);
+  const indexName = indexNameForSort(currentSort.col);
+  const rows = await dbPage({
+    indexName,
+    dir: currentSort.dir,
+    page: currentPage,
+    pageSize,
+    search: currentSearch
+  });
+  const total = await dbCountFiltered({search: currentSearch, indexName});
 
-  page.forEach(r=>{
+  rows.forEach(r=>{
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${formatDa_ddmmyyyy_hhmmss(r.dato)}</td>
@@ -361,7 +446,7 @@ function visRegistreringer(){
       <td>${r.aktivitet||''}</td>
       <td>${r.sag||''}</td>
       <td>${r.opgave||''}</td>
-      <td>${formatHMS(r._seconds)}</td>
+      <td>${formatHMS(r.seconds||0)}</td>
       <td></td>
     `;
     const actions = tr.lastElementChild;
@@ -369,26 +454,21 @@ function visRegistreringer(){
     const startBtn = document.createElement('button');
     startBtn.className='btn btn-sm btn-outline-success me-1';
     startBtn.textContent='Start her';
-    startBtn.onclick = ()=> startFromRow(r._index);
+    startBtn.onclick = ()=> startFromRow(r.id);
     actions.appendChild(startBtn);
 
     const dupBtn = document.createElement('button');
     dupBtn.className='btn btn-sm btn-outline-primary me-1';
     dupBtn.textContent='Dupliker';
-    dupBtn.onclick = ()=> duplicateToForm(r._index);
+    dupBtn.onclick = ()=> duplicateToForm(r.id);
     actions.appendChild(dupBtn);
 
     const delBtn = document.createElement('button');
     delBtn.className='btn btn-sm btn-danger';
     delBtn.textContent='Slet';
-    delBtn.onclick = ()=>{
-      if(confirm('Er du sikker på, at du vil slette denne registrering?')){
-        const allRecs = hentRegistreringer();
-        allRecs.splice(r._index,1);
-        gemRegistreringer(allRecs);
-        const newTotal = getDisplayRows().length;
-        const maxp = totalPages(newTotal);
-        if(currentPage>maxp) currentPage=maxp;
+    delBtn.onclick = async ()=>{
+      if(confirm('Slette denne registrering?')){
+        await dbDeleteById(r.id);
         visRegistreringer();
       }
     };
@@ -404,9 +484,9 @@ function visRegistreringer(){
   if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
 }
 
-// ===== Timer-state =====
+// ========= Timer-state =========
 let timerInterval=null, startTimeMs=null, accumulatedSeconds=0;
-let editingIndex=null, resumeReplace=false;
+let editingId=null, resumeReplace=false;
 
 function setForm(r){
   document.getElementById('dato').value = r.dato;
@@ -433,45 +513,45 @@ function startTimerUIFromSeconds(seconds){
   }, 250);
 }
 
-function startFromRow(index){
-  const all = hentRegistreringer();
-  const r = all[index];
-  if(!r) return;
+async function getById(id){
+  const db = await openDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(STORE, 'readonly');
+    const os = tx.objectStore(STORE);
+    const req = os.get(id);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
 
+async function startFromRow(id){
+  const r = await getById(id);
+  if(!r) return;
   const thresholdMin = getThresholdMinutes();
   const recordTimeMs = r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : Date.now();
   const withinWindow = (Date.now() - recordTimeMs) <= thresholdMin*60*1000;
 
   const copy = { ...r };
-  if(withinWindow){
-    const now = new Date();
-    copy.dato = toLocalIsoNoTZ(now);
-  }
+  if(withinWindow) copy.dato = toLocalIsoNoTZ(new Date());
   setForm(copy);
 
-  const baseline = withinWindow
-    ? (Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600))
-    : 0;
-
-  editingIndex = withinWindow ? index : null;
+  const baseline = withinWindow ? (Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600)) : 0;
+  editingId = withinWindow ? r.id : null;
   resumeReplace = withinWindow;
 
   stopTimerUI();
   startTimerUIFromSeconds(baseline);
 }
 
-function duplicateToForm(index){
-  const all = hentRegistreringer();
-  const r = all[index];
+async function duplicateToForm(id){
+  const r = await getById(id);
   if(!r) return;
-
   setForm(r);
   const seconds = Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600);
   document.getElementById('timer').value = formatHMS(seconds);
-
   stopTimerUI();
   accumulatedSeconds=0;
-  editingIndex=null;
+  editingId=null;
   resumeReplace=false;
 }
 
@@ -495,22 +575,20 @@ function startStopTimer(){
   startTimerUIFromSeconds(baseline);
 }
 
-// ===== Tilføj registrering =====
-function tilføjRegistrering(){
+// ========= Tilføj/Gem =========
+async function tilføjRegistrering(){
   const datoIso = document.getElementById('dato').value;
   const username = document.getElementById('username').value.trim();
-  const projektnr = document.getElementById('projektnr').value;
-  const aktivitet = document.getElementById('aktivitet').value;
-  const opgave = document.getElementById('opgave').value;
-  const sag = document.getElementById('sag').value;
+  const projektnr = document.getElementById('projektnr').value.trim();
+  const aktivitet = document.getElementById('aktivitet').value.trim();
+  const opgave = document.getElementById('opgave').value.trim();
+  const sag = document.getElementById('sag').value.trim();
   let t = (document.getElementById('timer').value||'').trim();
 
   if(!datoIso || !username || !projektnr || !aktivitet || !opgave || !t){
     alert('Udfyld alle felter (inkl. brugernavn).'); return;
   }
-  if(!isValidEmail(username)){
-    alert('Ugyldig e-mailadresse i Brugernavn.'); return;
-  }
+  if(!isValidEmail(username)){ alert('Ugyldig e-mailadresse i Brugernavn.'); return; }
 
   let totalSeconds;
   if(timerInterval){
@@ -526,19 +604,20 @@ function tilføjRegistrering(){
   }
 
   const now = Date.now();
-  const rec = { dato:datoIso, username, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
+  const rec = { 
+    dato:datoIso, 
+    _datoMs: fromLocalIsoNoTZ(datoIso).getTime(),
+    username, projektnr, aktivitet, opgave, sag, 
+    seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now 
+  };
 
-  const all = hentRegistreringer();
-  if(resumeReplace && editingIndex!=null && all[editingIndex]){
-    all[editingIndex] = rec;
+  if(resumeReplace && editingId!=null){
+    await dbUpdateById(editingId, {...rec, id:editingId});
   } else {
-    all.push(rec);
+    await dbAdd(rec);
   }
-  gemRegistreringer(all);
 
-  visRegistreringer();
-
-  // reset
+  // nulstil form + timer
   const dNow=new Date();
   document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
   document.getElementById('datoVis')._flatpickr.setDate(dNow, true);
@@ -548,27 +627,47 @@ function tilføjRegistrering(){
   document.getElementById('opgave').value='';
   document.getElementById('sag').value='';
   document.getElementById('timer').value='';
-  accumulatedSeconds=0; editingIndex=null; resumeReplace=false;
+  accumulatedSeconds=0; editingId=null; resumeReplace=false;
   if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
   document.getElementById('timerBtn').textContent='Start';
+
+  visRegistreringer();
 }
 
-// ===== Excel-eksport (.xlsx) =====
-function eksporterExcel(){
-  const all = getDisplayRows();
-  if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
+// ========= Excel-eksport =========
+async function eksporterExcel(){
+  const indexName = indexNameForSort(currentSort.col);
+  const direction = currentSort.dir==='asc'?'next':'prev';
+  const db = await openDB();
+  const tx = db.transaction(STORE, 'readonly');
+  const os = tx.objectStore(STORE);
+  const idx = os.index(indexName);
+  const rows = [];
+  await new Promise((resolve, reject)=>{
+    const req = idx.openCursor(null, direction);
+    req.onerror = ()=> reject(req.error);
+    req.onsuccess = ()=>{
+      const cursor = req.result;
+      if(!cursor) return resolve();
+      const v = cursor.value;
+      if(matchesSearch(v, currentSearch)) rows.push(v);
+      cursor.continue();
+    };
+  });
+
+  if(rows.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
 
   const header = ['DatoTid','Brugernavn','Projektnr','Aktivitetskode','Sag','Beskrivelse','Tid'];
-  const rows = all.map(r=>[
+  const data = rows.map(r=>[
     formatDa_ddmmyyyy_hhmmss(r.dato),
     r.username||'',
     r.projektnr||'',
     r.aktivitet||'',
     r.sag||'',
     (r.opgave||'').replaceAll(';', ','),
-    formatHMS(r._seconds)
+    formatHMS(r.seconds||0)
   ]);
-  const aoa = [header, ...rows];
+  const aoa = [header, ...data];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [{wch:20},{wch:28},{wch:14},{wch:16},{wch:10},{wch:40},{wch:12}];
   const wb = XLSX.utils.book_new();
@@ -576,7 +675,7 @@ function eksporterExcel(){
   XLSX.writeFile(wb, 'tidsregistrering.xlsx');
 }
 
-// ===== Sample data + slet alt =====
+// ========= Sample data (102000) =========
 function randomChoice(a){ return a[Math.floor(Math.random()*a.length)]; }
 function genProjektnr(){
   const prefixes = ['19','20','21','22','23','24','25'];
@@ -598,26 +697,22 @@ const opgaver = [
   'Opgradering','Vedligehold','Tilpasning','Implementering','Planlægning','Udrulning'
 ];
 
-const MAX_LOCALSTORAGE_ROWS = 8000; // ærligt loft – ellers løber du tør for kvote
 async function generateSampleData(){
   const WANT = 102000;
-  if(!confirm(`Oprette ${WANT} eksempelrækker? (LocalStorage kan ikke rumme så meget – jeg genererer op til ${MAX_LOCALSTORAGE_ROWS})`)) return;
+  if(!confirm(`Oprette ${WANT} eksempelrækker i IndexedDB?`)) return;
 
-  const base = hentRegistreringer();
+  const db = await openDB();
+  const tx = db.transaction(STORE, 'readwrite');
+  const os = tx.objectStore(STORE);
+
   const now = new Date();
-  const toMake = Math.max(0, Math.min(WANT, MAX_LOCALSTORAGE_ROWS) - base.length);
-  if(toMake <= 0){
-    alert('Der er allerede mindst ' + MAX_LOCALSTORAGE_ROWS + ' rækker. Slet noget først.');
-    return;
-  }
-
-  // generér i batches for ikke at fryse UI
-  const BATCH = 2000;
-  for(let i=0;i<toMake;i++){
+  const BATCH_LOG = 2000;
+  for(let i=0;i<WANT;i++){
     const d = new Date(now.getTime() - Math.floor(Math.random()*30)*86400000 - Math.floor(Math.random()*8)*3600000);
     const seconds = 900 * (1 + Math.floor(Math.random()*20)); // 15-min steps
-    base.push({
+    const rec = {
       dato: toLocalIsoNoTZ(d),
+      _datoMs: d.getTime(),
       username: randomChoice(emails),
       projektnr: genProjektnr(),
       aktivitet: randomChoice(aktivitetskoder),
@@ -626,25 +721,31 @@ async function generateSampleData(){
       seconds,
       timer: seconds/3600,
       savedAt: Date.now()
-    });
-    if (i % BATCH === 0 && i>0){
-      gemRegistreringer(base);
+    };
+    os.add(rec);
+    if(i>0 && i % BATCH_LOG === 0){
+      console.log(`Indsat ${i}…`);
+      // yield lidt til UI
       await new Promise(r=>setTimeout(r,0));
     }
   }
-  gemRegistreringer(base);
-  currentPage = 1;
-  visRegistreringer();
-  alert(`Færdig. Oprettede ${toMake} rækker (LocalStorage-loft). Hvis du vil have alle 102000, så skifter vi til IndexedDB.`);
+
+  tx.oncomplete = ()=>{ 
+    console.log('Færdig: 102000 rækker oprettet.');
+    currentPage = 1; visRegistreringer(); 
+    alert('Færdig: 102000 rækker oprettet.');
+  };
+  tx.onerror = ()=> alert('Fejl under generering: ' + tx.error);
 }
-function deleteAllData(){
+
+async function deleteAllData(){
   if(!confirm('Slette alle rækker? Dette kan ikke fortrydes.')) return;
-  localStorage.removeItem('registreringer');
+  await dbClear();
   currentPage = 1;
   visRegistreringer();
 }
 
-// ===== GET-parametre =====
+// ========= GET-parametre =========
 function applyQueryParams(){
   const q=new URLSearchParams(window.location.search);
   if(![...q.keys()].length) return;
@@ -666,6 +767,7 @@ function applyQueryParams(){
 
   const tid=q.get('tid');
   const action=(q.get('action')||'').toLowerCase();
+
   if(tid){
     let seconds=null;
     if(tid.includes(':')){ seconds=parseHMStoSeconds(tid); if(seconds==null) seconds=parseDDHHMMtoSeconds(tid); }
@@ -673,27 +775,46 @@ function applyQueryParams(){
     if(seconds!=null){
       document.getElementById('timer').value = formatHMS(seconds);
       if(action==='timer'){ stopTimerUI(); startTimerUIFromSeconds(seconds); }
-      if(action==='record'){ tilføjRegistrering(); }
+      if(action==='record'){ 
+        // gem direkte
+        const rec = buildRecFromForm(seconds);
+        dbAdd(rec).then(()=> visRegistreringer());
+      }
     }
   } else {
     if(action==='timer'){ stopTimerUI(); startTimerUIFromSeconds(0); }
   }
 }
 
-// ===== Init =====
-document.addEventListener('DOMContentLoaded', ()=>{
+function buildRecFromForm(seconds){
+  const datoIso = document.getElementById('dato').value;
+  return {
+    dato: datoIso,
+    _datoMs: fromLocalIsoNoTZ(datoIso).getTime(),
+    username: document.getElementById('username').value.trim(),
+    projektnr: document.getElementById('projektnr').value.trim(),
+    aktivitet: document.getElementById('aktivitet').value.trim(),
+    opgave: document.getElementById('opgave').value.trim(),
+    sag: document.getElementById('sag').value.trim(),
+    seconds: seconds,
+    timer: seconds/3600,
+    savedAt: Date.now()
+  };
+}
+
+// ========= Init =========
+document.addEventListener('DOMContentLoaded', async ()=>{
   const now=new Date();
   initDatePicker(now);
-  setThresholdToUI();
-  visRegistreringer();
-  applyQueryParams();
 
+  // Søg
   document.getElementById('searchInput').addEventListener('input', (e)=>{
     currentSearch = e.target.value || '';
     currentPage = 1;
     visRegistreringer();
   });
 
+  // Sort cols
   document.querySelectorAll('th.sortable').forEach(th=>{
     th.addEventListener('click', ()=>{
       const col = th.getAttribute('data-col');
@@ -707,18 +828,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   });
 
+  // Resume threshold
+  const saved=localStorage.getItem('resumeThresholdMin');
+  document.getElementById('resumeThreshold').value = saved ?? '10';
   document.getElementById('resumeThreshold').addEventListener('change', ()=>{
     const v=document.getElementById('resumeThreshold').value;
     const n=parseInt(v,10);
     localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10');
   });
 
-  // Settings buttons
+  // Settings
   document.getElementById('btnGenSample').addEventListener('click', generateSampleData);
   document.getElementById('btnDeleteAll').addEventListener('click', deleteAllData);
+
+  await openDB(); // sikrer DB init/indeks
+  applyQueryParams();
+  visRegistreringer();
 });
 
-// Ryd formular (ESC)
+// ESC: ryd formular
 function clearForm() {
   const dNow = new Date();
   document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
@@ -730,7 +858,7 @@ function clearForm() {
   document.getElementById('sag').value = '';
   document.getElementById('timer').value = '';
   accumulatedSeconds = 0;
-  editingIndex = null;
+  editingId = null;
   resumeReplace = false;
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
   document.getElementById('timerBtn').textContent = 'Start';
