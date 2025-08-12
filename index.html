@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+<<<<<<< HEAD
   :root{
     --brand:#3b82f6;          /* primær blå */
     --brand-contrast:#0b5ed7; /* mørkere hover */
@@ -36,6 +37,10 @@
   .help-list dd{ margin-left:0; }
   footer{ color:#6b7280; font-size:.85rem; }
   code{ background:#f1f5f9; border-radius:8px; padding:.25rem .5rem; }
+=======
+  th.sortable { cursor: pointer; }
+  th.sortable .sort-ind { opacity: .6; font-size: .9em; margin-left: .25rem; }
+>>>>>>> parent of cd56252 (Update index.html)
 </style>
 </head>
 <body class="bg-light">
@@ -48,17 +53,27 @@
   </div>
   <p class="lead-sm mb-4">Registrér tid hurtigt, genoptag opgaver, duplikér linjer, søg/sortér og eksportér til CSV i korrekt dansk format.</p>
 
+<<<<<<< HEAD
   <!-- Top actions: Indstillinger + Hjælp -->
   <div class="mb-3 d-flex justify-content-end gap-2">
     <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#settingsPanel" aria-expanded="false" title="Indstillinger">
+=======
+  <!-- Indstillinger (skjult bag knap) -->
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <div class="input-group w-auto">
+      <span class="input-group-text">Søg</span>
+      <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
+    </div>
+    <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#settingsPanel" aria-expanded="false">
+>>>>>>> parent of cd56252 (Update index.html)
       Indstillinger
-    </button>
-    <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#helpPanel" aria-expanded="false" title="Hjælp">
-      ?
     </button>
   </div>
 
+<<<<<<< HEAD
   <!-- Indstillinger (collapse) -->
+=======
+>>>>>>> parent of cd56252 (Update index.html)
   <div id="settingsPanel" class="collapse">
     <div class="card p-3 shadow-sm mb-3">
       <h5 class="mb-3">Indstillinger</h5>
@@ -70,7 +85,11 @@
         </div>
         <div class="col-sm-6 col-md-8">
           <small class="text-muted d-block">
+<<<<<<< HEAD
             Hvis en række er nyere end grænsen, fortsætter timeren fra den gemte tid, dato+tid sættes til nu, og <strong>Tilføj</strong> erstatter den række. Ellers startes fra 0 og <strong>Tilføj</strong> laver en ny række.
+=======
+            “Start her” fortsætter fra tidligere tid, hvis postens <em>dato+tid</em> er nyere end grænsen; ellers startes fra 0. Ved fortsættelse sættes dato+tid til nu, og “Tilføj” erstatter posten.
+>>>>>>> parent of cd56252 (Update index.html)
           </small>
         </div>
       </div>
@@ -92,6 +111,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- Hjælp (collapse) -->
   <div id="helpPanel" class="collapse">
     <div class="card p-4 shadow-sm mb-3">
@@ -125,6 +145,8 @@
     </div>
   </div>
 
+=======
+>>>>>>> parent of cd56252 (Update index.html)
   <!-- Formular -->
   <div class="card p-3 shadow-sm">
     <h5 class="mb-3">Ny registrering</h5>
@@ -134,6 +156,7 @@
         <input type="text" id="datoVis" class="form-control" placeholder="dd/mm/yyyy hh:mm:ss" />
         <input type="hidden" id="dato" />
       </div>
+<<<<<<< HEAD
       <div class="col-lg-4">
         <label for="username" class="form-label">Brugernavn (e-mail)</label>
         <input type="email" id="username" class="form-control" placeholder="bruger@example.com" inputmode="email" autocomplete="username" />
@@ -157,6 +180,26 @@
       </div>
 
       <div class="col-lg-4">
+=======
+      <div class="col-md-4">
+        <label for="projektnr" class="form-label">Projektnummer:</label>
+        <input type="text" id="projektnr" class="form-control" placeholder="Projektnummer" />
+      </div>
+      <div class="col-md-4">
+        <label for="aktivitet" class="form-label">Aktivitetskode:</label>
+        <input type="text" id="aktivitet" class="form-control" placeholder="Aktivitetskode" />
+      </div>
+
+      <div class="col-md-6">
+        <label for="opgave" class="form-label">Beskrivelse:</label>
+        <input type="text" id="opgave" class="form-control" placeholder="Beskriv opgaven" />
+      </div>
+      <div class="col-md-3">
+        <label for="sag" class="form-label">Sag # (max 10)</label>
+        <input type="text" id="sag" class="form-control" maxlength="10" placeholder="Sag #" />
+      </div>
+      <div class="col-md-3">
+>>>>>>> parent of cd56252 (Update index.html)
         <label for="timer" class="form-label">Tid (HH:MM:SS / DD:HH:MM / dec.)</label>
         <input type="text" id="timer" class="form-control" placeholder="00:00:00 eller 1,5" />
       </div>
@@ -168,6 +211,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- Toolbar: Søg + Eksport + Paginering -->
   <div class="mt-4 d-flex flex-wrap gap-2 align-items-center justify-content-between">
     <h4 class="m-0">Registreringer</h4>
@@ -185,6 +229,12 @@
         </ul>
       </nav>
     </div>
+=======
+  <!-- Toplinje: Eksport -->
+  <div class="mt-4 d-flex justify-content-between align-items-center">
+    <h4>Registreringer</h4>
+    <button onclick="eksporterCSV()" class="btn btn-success btn-sm">Eksporter til CSV</button>
+>>>>>>> parent of cd56252 (Update index.html)
   </div>
 
   <!-- Tabel -->
@@ -193,7 +243,6 @@
       <thead class="table-dark">
         <tr>
           <th class="sortable" data-col="dato">Dato + tid <span class="sort-ind"></span></th>
-          <th class="sortable" data-col="username">Brugernavn <span class="sort-ind"></span></th>
           <th class="sortable" data-col="projektnr">Projektnr <span class="sort-ind"></span></th>
           <th class="sortable" data-col="aktivitet">Aktivitetskode <span class="sort-ind"></span></th>
           <th class="sortable" data-col="sag">Sag # <span class="sort-ind"></span></th>
@@ -217,6 +266,7 @@
 <script>
 // ===== Utils =====
 function pad2(n){ return String(n).padStart(2,'0'); }
+<<<<<<< HEAD
 function toLocalIsoNoTZ(d){ const y=d.getFullYear(), m=pad2(d.getMonth()+1), da=pad2(d.getDate()); const h=pad2(d.getHours()), mi=pad2(d.getMinutes()), s=pad2(d.getSeconds()); return `${y}-${m}-${da}T${h}:${mi}:${s}`; }
 function fromLocalIsoNoTZ(str){ const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str); if(!m) return new Date(NaN); const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6]; return new Date(Y,Mo-1,D,H,Mi,S,0); }
 function formatDa_ddmmyyyy_hhmmss(localIsoStr){ const d = fromLocalIsoNoTZ(localIsoStr); if (isNaN(d)) return localIsoStr || ''; return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; }
@@ -224,6 +274,42 @@ function formatHMS(totalSeconds){ const hh=pad2(Math.floor(totalSeconds/3600)); 
 function parseHMStoSeconds(v){ const p=v.split(':'); if(p.length<2||p.length>3) return null; const hh=parseInt(p[0]||'0',10), mm=parseInt(p[1]||'0',10), ss=parseInt((p[2]||'0'),10); if([hh,mm,ss].some(n=>Number.isNaN(n)||n<0)) return null; return hh*3600+mm*60+ss; }
 function parseDDHHMMtoSeconds(v){ const p=v.split(':'); if(p.length!==3) return null; const dd=parseInt(p[0]||'0',10), hh=parseInt(p[1]||'0',10), mm=parseInt(p[2]||'0',10); if([dd,hh,mm].some(n=>Number.isNaN(n)||n<0)) return null; return dd*86400+hh*3600+mm*60; }
 function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v||''); }
+=======
+function toLocalIsoNoTZ(d){
+  const y=d.getFullYear(), m=pad2(d.getMonth()+1), da=pad2(d.getDate());
+  const h=pad2(d.getHours()), mi=pad2(d.getMinutes()), s=pad2(d.getSeconds());
+  return `${y}-${m}-${da}T${h}:${mi}:${s}`;
+}
+function fromLocalIsoNoTZ(str){
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
+  if(!m) return new Date(NaN);
+  const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
+  return new Date(Y,Mo-1,D,H,Mi,S,0);
+}
+function formatDa_ddmmyyyy_hhmmss(localIsoStr){
+  const d = fromLocalIsoNoTZ(localIsoStr);
+  if (isNaN(d)) return localIsoStr || '';
+  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+function formatHMS(totalSeconds){
+  const hh=pad2(Math.floor(totalSeconds/3600));
+  const mm=pad2(Math.floor((totalSeconds%3600)/60));
+  const ss=pad2(totalSeconds%60);
+  return `${hh}:${mm}:${ss}`;
+}
+function parseHMStoSeconds(v){
+  const p=v.split(':'); if(p.length<2||p.length>3) return null;
+  const hh=parseInt(p[0]||'0',10), mm=parseInt(p[1]||'0',10), ss=parseInt((p[2]||'0'),10);
+  if([hh,mm,ss].some(n=>Number.isNaN(n)||n<0)) return null;
+  return hh*3600+mm*60+ss;
+}
+function parseDDHHMMtoSeconds(v){
+  const p=v.split(':'); if(p.length!==3) return null;
+  const dd=parseInt(p[0]||'0',10), hh=parseInt(p[1]||'0',10), mm=parseInt(p[2]||'0',10);
+  if([dd,hh,mm].some(n=>Number.isNaN(n)||n<0)) return null;
+  return dd*86400+hh*3600+mm*60;
+}
+>>>>>>> parent of cd56252 (Update index.html)
 
 // ===== LocalStorage helpers =====
 function hentRegistreringer(){ return JSON.parse(localStorage.getItem('registreringer')||'[]'); }
@@ -231,12 +317,11 @@ function gemRegistreringer(rs){ localStorage.setItem('registreringer', JSON.stri
 function getThresholdMinutes(){ const ui=parseInt(document.getElementById('resumeThreshold').value||'',10); if(!Number.isNaN(ui)&&ui>=0) return ui; const ls=parseInt(localStorage.getItem('resumeThresholdMin')||'',10); return Number.isNaN(ls)?10:ls; }
 function setThresholdToUI(){ const saved=localStorage.getItem('resumeThresholdMin'); document.getElementById('resumeThreshold').value = saved ?? '10'; }
 
-// ===== Global UI state (sort + search + pagination) =====
+// ===== Global UI state (sort + search) =====
 let currentSort = { col:'dato', dir:'desc' };
 let currentSearch = '';
-const pageSize = 50;
-let currentPage = 1;
 
+<<<<<<< HEAD
 // ===== Flatpickr init helper =====
 function initDatePicker(now){
   document.getElementById('dato').value = toLocalIsoNoTZ(now);
@@ -268,10 +353,51 @@ function visRegistreringer(){
   const all = getDisplayRows(); const total = all.length;
   const start = (currentPage-1)*pageSize; const page = all.slice(start, start + pageSize);
   page.forEach(r=>{
+=======
+// ===== Tabelrender med søg/sort =====
+function getDisplayRows(){
+  const rows = hentRegistreringer().map((r, idx)=>({
+    ...r,
+    _index: idx,
+    _seconds: Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600),
+    _datoMs: r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : 0
+  }));
+  // filter
+  const q = currentSearch.trim().toLowerCase();
+  const filtered = q ? rows.filter(r=>{
+    const fields = [
+      formatDa_ddmmyyyy_hhmmss(r.dato),
+      r.projektnr||'', r.aktivitet||'', r.sag||'', r.opgave||'',
+      formatHMS(r._seconds)
+    ].join(' ').toLowerCase();
+    return fields.includes(q);
+  }) : rows;
+
+  // sort
+  const { col, dir } = currentSort;
+  const sgn = dir==='asc'?1:-1;
+  filtered.sort((a,b)=>{
+    let va, vb;
+    if(col==='seconds'){ va=a._seconds; vb=b._seconds; }
+    else if(col==='dato'){ va=a._datoMs; vb=b._datoMs; }
+    else { va=(a[col]||'').toString().toLowerCase(); vb=(b[col]||'').toString().toLowerCase(); }
+    if(va<vb) return -1*sgn;
+    if(va>vb) return 1*sgn;
+    return 0;
+  });
+  return filtered;
+}
+
+function visRegistreringer(){
+  const tbody = document.getElementById('tabelBody');
+  tbody.innerHTML = '';
+  const data = getDisplayRows();
+
+  data.forEach(r=>{
+>>>>>>> parent of cd56252 (Update index.html)
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${formatDa_ddmmyyyy_hhmmss(r.dato)}</td>
-      <td>${r.username||''}</td>
       <td>${r.projektnr||''}</td>
       <td>${r.aktivitet||''}</td>
       <td>${r.sag||''}</td>
@@ -280,17 +406,51 @@ function visRegistreringer(){
       <td></td>
     `;
     const actions = tr.lastElementChild;
+<<<<<<< HEAD
     const startBtn = document.createElement('button'); startBtn.className='btn btn-sm btn-outline-success me-1'; startBtn.textContent='Start her'; startBtn.onclick = ()=> startFromRow(r._index); actions.appendChild(startBtn);
     const dupBtn = document.createElement('button'); dupBtn.className='btn btn-sm btn-outline-primary me-1'; dupBtn.textContent='Dupliker'; dupBtn.onclick = ()=> duplicateToForm(r._index); actions.appendChild(dupBtn);
     const delBtn = document.createElement('button'); delBtn.className='btn btn-sm btn-outline-danger'; delBtn.textContent='Slet'; delBtn.onclick = ()=>{ if(confirm('Er du sikker på, at du vil slette denne registrering?')){ const allRecs = hentRegistreringer(); allRecs.splice(r._index,1); gemRegistreringer(allRecs); const newTotal = getDisplayRows().length; const maxp = totalPages(newTotal); if(currentPage>maxp) currentPage=maxp; visRegistreringer(); } }; actions.appendChild(delBtn);
     tbody.appendChild(tr);
   });
   renderPagination(total);
+=======
+
+    const startBtn = document.createElement('button');
+    startBtn.className='btn btn-sm btn-outline-success me-1';
+    startBtn.textContent='Start her';
+    startBtn.onclick = ()=> startFromRow(r._index);
+    actions.appendChild(startBtn);
+
+    const dupBtn = document.createElement('button');
+    dupBtn.className='btn btn-sm btn-outline-primary me-1';
+    dupBtn.textContent='Dupliker';
+    dupBtn.onclick = ()=> duplicateToForm(r._index);
+    actions.appendChild(dupBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className='btn btn-sm btn-danger';
+    delBtn.textContent='Slet';
+    delBtn.onclick = ()=>{
+      if(confirm('Er du sikker på, at du vil slette denne registrering?')){
+        const all = hentRegistreringer();
+        all.splice(r._index,1);
+        gemRegistreringer(all);
+        visRegistreringer();
+      }
+    };
+    actions.appendChild(delBtn);
+
+    tbody.appendChild(tr);
+  });
+
+  // opdater sort indikator
+>>>>>>> parent of cd56252 (Update index.html)
   document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='');
   const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`); if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
 }
 
 // ===== Timer-state =====
+<<<<<<< HEAD
 let timerInterval=null, startTimeMs=null, accumulatedSeconds=0; let editingIndex=null, resumeReplace=false;
 function setForm(r){ document.getElementById('dato').value = r.dato; const d = fromLocalIsoNoTZ(r.dato); document.getElementById('datoVis')._flatpickr.setDate(d, true); document.getElementById('username').value = r.username||''; document.getElementById('projektnr').value = r.projektnr||''; document.getElementById('aktivitet').value = r.aktivitet||''; document.getElementById('opgave').value = r.opgave||''; document.getElementById('sag').value = r.sag||''; }
 function stopTimerUI(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } document.getElementById('timerBtn').textContent='Start'; }
@@ -342,26 +502,263 @@ function genSamples102(){
   gemRegistreringer(list);
   currentPage = 1; // gå til første side for overblik
   visRegistreringer();
+=======
+let timerInterval=null, startTimeMs=null, accumulatedSeconds=0;
+let editingIndex=null, resumeReplace=false;
+
+function setForm(r){
+  // dato (hidden+vis)
+  document.getElementById('dato').value = r.dato;
+  const d = fromLocalIsoNoTZ(r.dato);
+  document.getElementById('datoVis')._flatpickr.setDate(d, true);
+  // øvrige
+  document.getElementById('projektnr').value = r.projektnr||'';
+  document.getElementById('aktivitet').value = r.aktivitet||'';
+  document.getElementById('opgave').value = r.opgave||'';
+  document.getElementById('sag').value = r.sag||'';
+}
+function stopTimerUI(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+  document.getElementById('timerBtn').textContent='Start';
+}
+function startTimerUIFromSeconds(seconds){
+  accumulatedSeconds=seconds;
+  startTimeMs = Date.now() - seconds*1000;
+  document.getElementById('timerBtn').textContent='Stop';
+  document.getElementById('timer').value = formatHMS(accumulatedSeconds);
+  timerInterval = setInterval(()=>{
+    const totalSeconds = Math.floor((Date.now()-startTimeMs)/1000);
+    document.getElementById('timer').value = formatHMS(totalSeconds);
+  }, 250);
+}
+
+function startFromRow(index){
+  const all = hentRegistreringer();
+  const r = all[index];
+  if(!r) return;
+
+  const thresholdMin = getThresholdMinutes();
+  const recordTimeMs = r.dato ? fromLocalIsoNoTZ(r.dato).getTime() : Date.now();
+  const withinWindow = (Date.now() - recordTimeMs) <= thresholdMin*60*1000;
+
+  const copy = { ...r };
+  if(withinWindow){
+    const now = new Date();
+    copy.dato = toLocalIsoNoTZ(now); // sæt til nu (vises dansk)
+  }
+  setForm(copy);
+
+  const baseline = withinWindow
+    ? (Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600))
+    : 0;
+
+  editingIndex = withinWindow ? index : null;
+  resumeReplace = withinWindow;
+
+  stopTimerUI();
+  startTimerUIFromSeconds(baseline);
+}
+
+function duplicateToForm(index){
+  const all = hentRegistreringer();
+  const r = all[index];
+  if(!r) return;
+
+  setForm(r);
+  const seconds = Number.isFinite(r.seconds)? r.seconds : Math.round(parseFloat(r.timer||0)*3600);
+  document.getElementById('timer').value = formatHMS(seconds);
+
+  stopTimerUI();
+  accumulatedSeconds=0;
+  editingIndex=null;
+  resumeReplace=false;
+}
+
+function startStopTimer(){
+  const btn=document.getElementById('timerBtn');
+  if(timerInterval){
+    const runningSeconds=Math.floor((Date.now()-startTimeMs)/1000);
+    accumulatedSeconds=runningSeconds;
+    clearInterval(timerInterval); timerInterval=null;
+    btn.textContent='Start';
+    document.getElementById('timer').value = formatHMS(accumulatedSeconds);
+    return;
+  }
+  // baseline fra felt
+  let baseline=0, v=(document.getElementById('timer').value||'').trim();
+  if(v.includes(':')){
+    baseline = parseHMStoSeconds(v);
+    if(baseline==null) baseline = parseDDHHMMtoSeconds(v) ?? 0;
+  } else if(v){
+    const num=parseFloat(v.replace(',', '.')); if(!Number.isNaN(num)&&num>=0) baseline=Math.round(num*3600);
+  }
+  startTimerUIFromSeconds(baseline);
+}
+
+// ===== Tilføj registrering =====
+function tilføjRegistrering(){
+  const datoIso = document.getElementById('dato').value; // lokal ISO "YYYY-MM-DDTHH:MM:SS"
+  const projektnr = document.getElementById('projektnr').value;
+  const aktivitet = document.getElementById('aktivitet').value;
+  const opgave = document.getElementById('opgave').value;
+  const sag = document.getElementById('sag').value;
+  let t = (document.getElementById('timer').value||'').trim();
+
+  if(!datoIso || !projektnr || !aktivitet || !opgave || !t){ alert('Udfyld alle felter.'); return; }
+
+  let totalSeconds;
+  if(timerInterval){
+    totalSeconds = Math.floor((Date.now()-startTimeMs)/1000);
+  } else if(t.includes(':')){
+    let s=parseHMStoSeconds(t); if(s==null) s=parseDDHHMMtoSeconds(t);
+    if(s==null){ alert('Ugyldigt tidsformat. Brug HH:MM:SS, DD:HH:MM eller decimaltal.'); return; }
+    totalSeconds=s;
+  } else {
+    const num=parseFloat(t.replace(',', '.'));
+    if(Number.isNaN(num)){ alert('Tid skal være et tal eller HH:MM:SS / DD:HH:MM'); return; }
+    totalSeconds = Math.round(num*3600);
+  }
+
+  const now = Date.now();
+  const rec = { dato:datoIso, projektnr, aktivitet, opgave, sag, seconds:totalSeconds, timer: totalSeconds/3600, savedAt: now };
+
+  const all = hentRegistreringer();
+  if(resumeReplace && editingIndex!=null && all[editingIndex]){
+    all[editingIndex] = rec;
+  } else {
+    all.push(rec);
+  }
+  gemRegistreringer(all);
+  visRegistreringer();
+
+  // nulstil form + timer
+  const dNow=new Date();
+  document.getElementById('dato').value = toLocalIsoNoTZ(dNow);
+  document.getElementById('datoVis')._flatpickr.setDate(dNow, true);
+  document.getElementById('projektnr').value='';
+  document.getElementById('aktivitet').value='';
+  document.getElementById('opgave').value='';
+  document.getElementById('sag').value='';
+  document.getElementById('timer').value='';
+  accumulatedSeconds=0; editingIndex=null; resumeReplace=false;
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+  document.getElementById('timerBtn').textContent='Start';
+}
+
+// ===== CSV-eksport (samme formater som visning) =====
+function eksporterCSV(){
+  const all = getDisplayRows(); // respekter evt. søg/sort i eksporten
+  if(all.length===0){ alert('Der er ingen registreringer at eksportere.'); return; }
+
+  const header = 'DatoTid;Projektnr;Aktivitetskode;Sag;Beskrivelse;Tid';
+  const rows = all.map(r=>{
+    const dt = formatDa_ddmmyyyy_hhmmss(r.dato);
+    const tid = formatHMS(r._seconds);
+    return `${dt};${r.projektnr||''};${r.aktivitet||''};${r.sag||''};${(r.opgave||'').replaceAll(';',',')};${tid}`;
+  });
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='tidsregistrering.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+>>>>>>> parent of cd56252 (Update index.html)
 }
 function deleteAll(){ if(!confirm('Slette alle rækker permanent?')) return; localStorage.removeItem('registreringer'); currentPage=1; visRegistreringer(); }
 
 // ===== GET-parametre =====
+<<<<<<< HEAD
 function applyQueryParams(){ const q=new URLSearchParams(window.location.search); if(![...q.keys()].length) return; const setIf=(id,val)=>{ if(val!=null && val!=='') document.getElementById(id).value=val; }; const dt=q.get('datetime'); if(dt){ const d=new Date(dt); if(!isNaN(d)){ document.getElementById('dato').value = toLocalIsoNoTZ(d); document.getElementById('datoVis')._flatpickr.setDate(d, true); } } setIf('username', q.get('username')); setIf('projektnr', q.get('projektnr')); setIf('aktivitet', q.get('aktivitet')); setIf('sag', q.get('sag')); setIf('opgave', q.get('opgave')); const tid=q.get('tid'); if(tid){ let seconds=null; if(tid.includes(':')){ seconds=parseHMStoSeconds(tid); if(seconds==null) seconds=parseDDHHMMtoSeconds(tid); } else { const num=parseFloat(tid.replace(',','.')); if(!Number.isNaN(num)) seconds=Math.round(num*3600); } if(seconds!=null){ document.getElementById('timer').value = formatHMS(seconds); const act=(q.get('action')||'').toLowerCase(); if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(seconds); } if(act==='record'){ tilføjRegistrering(); } } } else { const act=(q.get('action')||'').toLowerCase(); if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(0); } } }
+=======
+function applyQueryParams(){
+  const q=new URLSearchParams(window.location.search);
+  if(![...q.keys()].length) return;
+
+  const setIf=(id,val)=>{ if(val!=null && val!=='') document.getElementById(id).value=val; };
+
+  // datetime
+  const dt=q.get('datetime');
+  if(dt){
+    const d=new Date(dt);
+    if(!isNaN(d)){
+      document.getElementById('dato').value = toLocalIsoNoTZ(d);
+      document.getElementById('datoVis')._flatpickr.setDate(d, true);
+    }
+  }
+
+  setIf('projektnr', q.get('projektnr'));
+  setIf('aktivitet', q.get('aktivitet'));
+  setIf('sag', q.get('sag'));
+  setIf('opgave', q.get('opgave'));
+
+  const tid=q.get('tid');
+  if(tid){
+    let seconds=null;
+    if(tid.includes(':')){ seconds=parseHMStoSeconds(tid); if(seconds==null) seconds=parseDDHHMMtoSeconds(tid); }
+    else { const num=parseFloat(tid.replace(',','.')); if(!Number.isNaN(num)) seconds=Math.round(num*3600); }
+    if(seconds!=null){
+      document.getElementById('timer').value = formatHMS(seconds);
+      const act=(q.get('action')||'').toLowerCase();
+      if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(seconds); }
+      if(act==='record'){ tilføjRegistrering(); }
+    }
+  } else {
+    const act=(q.get('action')||'').toLowerCase();
+    if(act==='timer'){ stopTimerUI(); startTimerUIFromSeconds(0); }
+  }
+}
+>>>>>>> parent of cd56252 (Update index.html)
 
 // ===== Init =====
 function bindSettingButtons(){ document.getElementById('btnGenSamples').addEventListener('click', genSamples102); document.getElementById('btnDeleteAll').addEventListener('click', deleteAll); }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Flatpickr init
   const now=new Date();
-  initDatePicker(now);
+  document.getElementById('dato').value = toLocalIsoNoTZ(now);
+  flatpickr("#datoVis", {
+    enableTime:true, time_24hr:true, enableSeconds:true,
+    dateFormat:"d/m/Y H:i:S", locale: flatpickr.l10ns.da,
+    defaultDate: now,
+    onChange: (dates)=>{ if(dates && dates[0]) document.getElementById('dato').value = toLocalIsoNoTZ(dates[0]); }
+  });
+  document.getElementById('datoVis')._flatpickr.setDate(now, true);
+
   setThresholdToUI();
   bindSettingButtons();
   visRegistreringer();
   applyQueryParams();
 
+<<<<<<< HEAD
   document.getElementById('searchInput').addEventListener('input', (e)=>{ currentSearch = e.target.value || ''; currentPage = 1; visRegistreringer(); });
   document.querySelectorAll('th.sortable').forEach(th=>{ th.addEventListener('click', ()=>{ const col = th.getAttribute('data-col'); if(currentSort.col===col){ currentSort.dir = currentSort.dir==='asc'?'desc':'asc'; }else{ currentSort.col=col; currentSort.dir='asc'; } currentPage = 1; visRegistreringer(); }); });
   document.getElementById('resumeThreshold').addEventListener('change', ()=>{ const v=document.getElementById('resumeThreshold').value; const n=parseInt(v,10); localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10'); });
+=======
+  document.getElementById('resumeThreshold').addEventListener('change', ()=>{
+    const v=document.getElementById('resumeThreshold').value;
+    const n=parseInt(v,10);
+    localStorage.setItem('resumeThresholdMin',(!Number.isNaN(n)&&n>=0)? String(n):'10');
+  });
+
+  // Søg
+  document.getElementById('searchInput').addEventListener('input', (e)=>{
+    currentSearch = e.target.value || '';
+    visRegistreringer();
+  });
+
+  // Sort (klik på header)
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const col = th.getAttribute('data-col');
+      if(currentSort.col===col){
+        currentSort.dir = currentSort.dir==='asc'?'desc':'asc';
+      }else{
+        currentSort.col=col; currentSort.dir='asc';
+      }
+      visRegistreringer();
+    });
+  });
+>>>>>>> parent of cd56252 (Update index.html)
 });
 </script>
 </body>
