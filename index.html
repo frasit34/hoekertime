@@ -224,7 +224,6 @@ function toLocalIsoNoTZ(d){
   return `${y}-${m}-${da}T${h}:${mi}:${s}`;
 }
 function fromLocalIsoNoTZ(str){
-  // FIX: korrekt regex-escape i literal (\d, ikke \\d)
   const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
   if(!m) return new Date(NaN);
   const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
@@ -255,7 +254,6 @@ function parseDDHHMMtoSeconds(v){
 }
 function isValidEmail(v){
   if(!v) return false;
-  // FIX: korrekt \s i stedet for \\s
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
@@ -401,8 +399,8 @@ function visRegistreringer(){
 
   renderPagination(total);
 
-  document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='';
-  );
+  // FIX: korrekt callback (stopper ikke JS længere)
+  document.querySelectorAll('th.sortable .sort-ind').forEach(el => el.textContent = '');
   const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`);
   if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
 }
@@ -601,7 +599,7 @@ const opgaver = [
   'Opgradering','Vedligehold','Tilpasning','Implementering','Planlægning','Udrulning'
 ];
 
-const MAX_LOCALSTORAGE_ROWS = 8000; // ærligt loft – ellers løber du tør for kvote
+const MAX_LOCALSTORAGE_ROWS = 8000;
 async function generateSampleData(){
   const WANT = 102000;
   if(!confirm(`Oprette ${WANT} eksempelrækker? (LocalStorage kan ikke rumme så meget – jeg genererer op til ${MAX_LOCALSTORAGE_ROWS})`)) return;
@@ -614,11 +612,10 @@ async function generateSampleData(){
     return;
   }
 
-  // generér i batches for ikke at fryse UI
   const BATCH = 2000;
   for(let i=0;i<toMake;i++){
     const d = new Date(now.getTime() - Math.floor(Math.random()*30)*86400000 - Math.floor(Math.random()*8)*3600000);
-    const seconds = 900 * (1 + Math.floor(Math.random()*20)); // 15-min steps
+    const seconds = 900 * (1 + Math.floor(Math.random()*20));
     base.push({
       dato: toLocalIsoNoTZ(d),
       username: randomChoice(emails),
