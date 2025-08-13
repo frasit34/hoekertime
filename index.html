@@ -224,7 +224,8 @@ function toLocalIsoNoTZ(d){
   return `${y}-${m}-${da}T${h}:${mi}:${s}`;
 }
 function fromLocalIsoNoTZ(str){
-  const m=/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})$/.exec(str);
+  // FIX: korrekt regex-escape i literal (\d, ikke \\d)
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
   if(!m) return new Date(NaN);
   const Y=+m[1], Mo=+m[2], D=+m[3], H=+m[4], Mi=+m[5], S=+m[6];
   return new Date(Y,Mo-1,D,H,Mi,S,0);
@@ -254,7 +255,8 @@ function parseDDHHMMtoSeconds(v){
 }
 function isValidEmail(v){
   if(!v) return false;
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v);
+  // FIX: korrekt \s i stedet for \\s
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 // ===== LocalStorage helpers =====
@@ -399,7 +401,8 @@ function visRegistreringer(){
 
   renderPagination(total);
 
-  document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='');
+  document.querySelectorAll('th.sortable .sort-ind').forEach(el=>el.textContent='';
+  );
   const th = document.querySelector(`th.sortable[data-col="${currentSort.col}"] .sort-ind`);
   if(th) th.textContent = currentSort.dir==='asc'?'▲':'▼';
 }
