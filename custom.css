@@ -1,0 +1,180 @@
+/* ===== Din nuværende styling ===== */
+body { font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+th.sortable { cursor: pointer; }
+th.sortable .sort-ind { opacity: .6; font-size: .9em; margin-left: .25rem; }
+.help-list dt { font-weight: 700; margin-top:.75rem; }
+.small-muted { color: var(--muted); font-size: .875rem; }
+footer .small-muted { font-size: .75rem; }
+
+/* ===== Bootstrap knap-overrides ===== */
+
+/* Global farvepalette */
+:root{
+    --muted:#6c757d;
+  --bs-primary: #a9006b;
+  --bs-primary-rgb: 0,115,169;
+  --bs-secondary: #e6e6e6;
+  --bs-secondary-rgb: 230,230,230;
+
+
+  --bs-btn-default-color: #fff;
+  --bs-btn-default-bg: #0073a9;
+  --bs-btn-default-border-color: #e6e6e6;
+  --bs-btn-default-hover-bg: #acacac;
+  --bs-btn-default-hover-border-color: #acacac;
+  --bs-btn-default-disabled-bg: #e6e6e6;
+  --bs-btn-default-disabled-border-color: #e6e6e6;
+  --bs-btn-default-disabled-color: #9f9f9f;
+}
+
+/* knapper */
+.btn {
+    color: var(--bs-btn-default-color);
+    background-color: var(--bs-btn-default-bg);
+    border-color: var(--bs-btn-default-border-color);
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    font-size: 0.875rem;          /* ca. 14px */
+    font-weight: 700;
+    line-height: 2.25rem;         /* ca. 36px line-height */
+    letter-spacing: 0.0892857143em;
+  }
+  .btn:hover,
+  .btn:focus {
+    background-color: var(--bs-btn-default-hover-bg);
+    border-color: var(--bs-btn-default-hover-border-color);
+  }
+  .btn:disabled {
+    background-color: var(--bs-btn-default-disabled-bg);
+    border-color: var(--bs-btn-default-disabled-border-color);
+    color: var(--bs-btn-default-disabled-color);
+  }
+
+/* Primary hover */
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color:#00567f;
+  border-color:#00567f;
+}
+
+/* Secondary */
+.btn-secondary{
+  color:#222;
+  background-color:#e6e6e6;
+  border-color:#e6e6e6;
+}
+.btn-secondary:hover,
+.btn-secondary:focus{
+  background-color:#acacac;
+  border-color:#acacac;
+  color:#222;
+}
+
+/* Tertiary (outline) */
+.btn-outline-primary{
+  background-color:#fff;
+  color:#0073a9;
+  border-color:#0073a9;
+  border-width:2px;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus{
+  color:#00567f;
+  border-color:#00567f;
+  background-color:#fff;
+}
+
+/* Text */
+.btn-link{
+  color:#0073a9;
+  text-decoration:none;
+}
+.btn-link:hover,
+.btn-link:focus{
+  color:#00567f;
+  text-decoration:underline;
+}
+
+/* Destructive */
+.btn-destructive{
+  --bs-btn-color:#fff;
+  --bs-btn-bg:#b30000;
+  --bs-btn-border-color:#b30000;
+  --bs-btn-hover-bg:#860000;
+  --bs-btn-hover-border-color:#860000;
+  --bs-btn-disabled-bg:#d97f7f;
+  --bs-btn-disabled-border-color:#d97f7f;
+  --bs-btn-disabled-color:#e9bfc0;
+}
+
+/* Størrelser */
+.btn-sm{ 
+  padding: 4px 12px;
+  line-height: 1;
+  height: 24px;
+}
+.btn{      
+  padding: 6px 16px;
+  line-height: 1;
+  height: 32px;
+}
+.btn-lg{
+  padding: 8px 20px;
+  line-height: 1;
+  height: 40px;
+}
+
+/* Disabled-styles */
+.btn-primary:disabled{
+  background-color:#80b9d4;
+  border-color:#80b9d4;
+  color:#bfdbe9;
+}
+.btn-secondary:disabled{
+  background-color:#e6e6e6;
+  border-color:#e6e6e6;
+  color:#9f9f9f;
+}
+.btn-outline-primary:disabled{
+  color:#80b9d4;
+  border-color:#80b9d4;
+  background-color:#fff;
+}
+.btn-destructive:disabled,
+.btn-danger:disabled{
+  background-color:#d97f7f;
+  border-color:#d97f7f;
+  color:#e9bfc0;
+}
+
+
+/* Ens højde på inputfelter og knapper */
+.form-control {
+    height: 32px;               /* samme som .btn */
+    padding: 6px 12px;           /* justeret så teksten sidder rigtigt */
+    font-size: 0.875rem;         /* matcher knaptekst */
+    line-height: 1;              /* tættere lighed */
+  }
+
+/* Tabelheader med kun bundkant og lodrette skillelinjer */
+.table thead th {
+    background-color: #fff !important;
+    color: #000 !important;
+    border-top: 0 !important;                                    /* Fjern topkant */
+    border-left: 0 !important;                                   /* Fjern venstre kant */
+    border-right: 1px solid var(--bs-border-color) !important;   /* Lodret linje mellem kolonner */
+    border-bottom: 1px solid var(--bs-border-color) !important;  /* Bundkant */
+    vertical-align: middle;
+  }
+  
+  /* Fjern højre kant på sidste kolonne */
+  .table thead th:last-child {
+    border-right: 0 !important;
+  }
+  
+  /* Fjern topkanten, som .table-bordered tilføjer på første sektion (thead) */
+  .table.table-bordered > :not(caption):first-child {
+    border-top-width: 0 !important;
+  }
+  .table-responsive {
+    border-top: 0 !important;
+  }
