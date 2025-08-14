@@ -165,17 +165,17 @@
     </div>
   </div>
 
-  <!-- Toolbar -->
-  <div class="mt-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <h4 class="m-0">Registreringer</h4>
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-      <div class="input-group" style="max-width: 420px;">
-        <span class="input-group-text">Søg</span>
-        <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
-      </div>
-      <button onclick="eksporterExcel()" class="btn btn-success btn-sm">Eksporter til Excel</button>
-    </div>
+<!-- Toolbar -->
+<div class="mt-4 d-flex align-items-center justify-content-between gap-2">
+  <h4 class="m-0">Registreringer</h4>
+
+  <!-- Søg + Eksport i samme input-group, no-wrap -->
+  <div class="input-group flex-nowrap" style="max-width: 560px; width: 100%;">
+    <span class="input-group-text">Søg</span>
+    <input id="searchInput" type="text" class="form-control" placeholder="Filtrér i tabellen...">
+    <button onclick="eksporterExcel()" class="btn btn-success">Eksporter til Excel</button>
   </div>
+</div>
 
   <!-- Tabel -->
   <div class="table-responsive">
