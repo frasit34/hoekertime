@@ -166,15 +166,41 @@ footer .small-muted { font-size: .75rem; }
     vertical-align: middle;
   }
   
-  /* Fjern højre kant på sidste kolonne */
-  .table thead th:last-child {
+/* Header-celler: fjern højre kant på sidste kolonne */
+#regTable thead th:last-child {
     border-right: 0 !important;
   }
   
-  /* Fjern topkanten, som .table-bordered tilføjer på første sektion (thead) */
-  .table.table-bordered > :not(caption):first-child {
+  /* Fjern topkant fra hele tabellen, sektioner og rækker */
+  #regTable.table-bordered,
+  #regTable.table-bordered > :not(caption),
+  #regTable.table-bordered > :not(caption) > * {
+    border-top: 0 !important;
     border-top-width: 0 !important;
   }
+  
+  /* Fjern topkant fra wrapper */
+  #regTable.table-bordered .table-responsive,
   .table-responsive {
     border-top: 0 !important;
+  }
+  
+  /* Tving farver på .table-dark i thead */
+  #regTable thead.table-dark th {
+    background-color: #fff !important;
+    color: #000 !important;
+    border-color: var(--bs-border-color) !important;
+  }
+
+  /* Match højde og font på label-delen i inputgruppen */
+.input-group-text {
+    height: 32px;          /* samme som .form-control */
+    padding: 6px 12px;     /* samme som input */
+    font-size: 0.875rem;   /* matcher input/knapper */
+    line-height: 1;
+  }
+/* Centrer pagineringsknapper + sideinfo */
+nav[aria-label="Pagination"] {
+    display: flex;
+    justify-content: center !important;
   }
