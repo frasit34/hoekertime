@@ -1,0 +1,233 @@
+/* ===== Global font ===== */
+body { 
+  font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+}
+th.sortable { cursor: pointer; position: relative; }
+.help-list dt { font-weight: 700; margin-top:.75rem; }
+.small-muted { color: var(--muted); font-size: .875rem; }
+footer .small-muted { font-size: .75rem; }
+
+/* ===== Bootstrap knap-overrides ===== */
+
+/* Global farvepalette */
+:root {
+  --muted:#6c757d;
+  --bs-primary:#a9006b;
+  --bs-primary-rgb:0,115,169;
+  --bs-secondary:#e6e6e6;
+  --bs-secondary-rgb:230,230,230;
+}
+
+/* ===== Knapper ===== */
+
+/* Grundfarver */
+.btn {
+  color:#fff;
+  background-color:#0073a9; 
+  border-color:#0073a9;
+  font-family:'Montserrat', system-ui, -apple-system, sans-serif;
+  font-size:0.875rem;
+  font-weight:700;
+  line-height:2.25rem;
+  letter-spacing:0.089em;
+}
+
+/* Hover for alle normale knapper */
+.btn:hover,
+.btn:focus {
+  background-color:#00567f; 
+  border-color:#00567f;
+}
+
+/* Disabled */
+.btn:disabled {
+  background-color:#e6e6e6;
+  border-color:#e6e6e6;
+  color:#9f9f9f;
+}
+
+/* Primær */
+.btn-primary {
+  background-color:#0073a9;
+  border-color:#0073a9;
+  color:#fff;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color:#00567f;
+  border-color:#00567f;
+}
+
+/* Sekundær */
+.btn-secondary {
+  color:#222;
+  background-color:#e6e6e6;
+  border-color:#e6e6e6;
+}
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color:#acacac;
+  border-color:#acacac;
+  color:#222;
+}
+
+/* Outline */
+.btn-outline-primary {
+  background-color:#fff;
+  color:#0073a9;
+  border-color:#0073a9;
+  border-width:2px;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  color:#fff;
+  background-color:#00567f;
+  border-color:#00567f;
+}
+
+/* Link – samme look som primær, men underline ved hover */
+.btn-link {
+  color:#fff;
+  background-color:#0073a9;
+  border-color:#0073a9;
+  font-weight:700;
+  text-decoration:none;
+}
+.btn-link:hover,
+.btn-link:focus {
+  background-color:#00567f;
+  border-color:#00567f;
+  color:#fff;
+  text-decoration:underline;
+}
+
+/* Destructive – rød med mørkere rød ved hover */
+.btn-destructive {
+  color:#fff;
+  background-color:#B30000;
+  border-color:#B30000;
+}
+.btn-destructive:hover,
+.btn-destructive:focus {
+  background-color:#860000;
+  border-color:#860000;
+  color:#fff;
+}
+.btn-destructive:disabled {
+  background-color:#d97f7f;
+  border-color:#d97f7f;
+  color:#e9bfc0;
+}
+
+/* ===== Højdejustering (-20%) ===== */
+.btn-sm { padding:3px 10px; line-height:1; height:19px; }
+.btn { padding:5px 13px; line-height:1; height:26px; }
+.btn-lg { padding:7px 17px; line-height:1; height:32px; }
+
+.form-control {
+  height:26px;
+  padding:5px 10px;
+  font-size:0.875rem;
+  line-height:1;
+}
+.input-group-text {
+  height:26px;
+  padding:5px 10px;
+  font-size:0.875rem;
+  line-height:1;
+}
+
+/* ======================================================================
+   GLOBAL TABELSTIL (endelig korrigeret)
+   ====================================================================== */
+
+/* Header – hvid, kun bund og indre skillelinjer */
+.table thead th {
+  background-color:#fff !important;
+  color:#000 !important;
+  border-top:0 !important;
+  border-bottom:1px solid var(--bs-border-color) !important;
+  border-left:1px solid var(--bs-border-color) !important;
+  border-right:1px solid var(--bs-border-color) !important;
+  vertical-align:middle;
+}
+
+/* Fjern venstre og højre kant i header */
+.table thead th:first-child {
+  border-left: none !important;
+}
+.table thead th:last-child {
+  border-right: none !important;
+}
+
+.table thead.table-dark th {
+  background-color:#fff !important;
+  color:#000 !important;
+  border-color:var(--bs-border-color) !important;
+}
+
+/* Mindre luft + vertikal centrering */
+.table > :not(caption) > * > * {
+  padding-top:.25rem;
+  padding-bottom:.25rem;
+  vertical-align:middle;
+}
+
+/* Body – striber og skygge */
+.table {
+  box-shadow:0 .125rem .25rem rgba(0,0,0,.075);
+  border-radius:.25rem;
+  overflow:hidden;
+  border-collapse:separate;
+  border-spacing:0;
+  border:0 !important; 
+}
+.table > tbody > tr:nth-of-type(odd) > * {
+  background-color:#f8f9fa !important;
+}
+.table > tbody > tr:nth-of-type(even) > * {
+  background-color:#ffffff !important;
+}
+.table.table-hover > tbody > tr:hover > * {
+  background-color:#e9ecef !important;
+}
+
+/* Celler – indre kant men uden top */
+.table th,
+.table td {
+  border:1px solid var(--bs-border-color);
+  border-top:0;
+}
+
+/* Fjern venstre og højre kant i yderste bodyceller */
+.table tbody tr td:first-child {
+  border-left:0;
+}
+.table tbody tr td:last-child {
+  border-right:0;
+}
+
+/* ===== Tabelsortering ===== */
+th.sortable { 
+  cursor: pointer;
+  position: relative;
+}
+th.sortable::after {
+  content: "";
+  position: absolute;
+  right: .5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-top-color: #999;
+  opacity: .5;
+}
+th.sortable.asc::after {
+  border-top-color: transparent;
+  border-bottom-color: #0073a9;
+  opacity: 1;
+}
+th.sortable.desc::after {
+  border-top-color: #0073a9;
+  opacity: 1;
+}
